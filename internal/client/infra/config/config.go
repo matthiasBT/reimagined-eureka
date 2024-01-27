@@ -15,10 +15,13 @@ type Config struct {
 
 func InitConfig() (*Config, error) {
 	conf := new(Config)
-	flag.StringVar(&conf.DatabasePath, "database", "", "Path to a secrets storage") // TODO: SQLCipher
-	flag.StringVar(&conf.ServerAddress, "server", "", "Server address")
+	flag.StringVar(&conf.DatabasePath, "d", "", "Path to a secrets storage") // TODO: SQLCipher
+	flag.StringVar(&conf.ServerAddress, "a", "", "Server address")
 	flag.Parse()
 	if err := conf.validateDB(); err != nil {
+		return nil, err
+	}
+	if err := conf.validateServerAddress(); err != nil {
 		return nil, err
 	}
 	return conf, nil
