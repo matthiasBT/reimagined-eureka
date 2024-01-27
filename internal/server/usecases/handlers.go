@@ -88,6 +88,10 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 	authorize(w, session)
 }
 
+func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func authorize(w http.ResponseWriter, session *entities.Session) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
