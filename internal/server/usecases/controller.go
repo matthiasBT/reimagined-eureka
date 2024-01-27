@@ -1,10 +1,10 @@
 package usecases
 
 import (
+	"github.com/go-chi/chi/v5"
+
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/logging"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type BaseController struct {

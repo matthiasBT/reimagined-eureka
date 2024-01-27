@@ -6,12 +6,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
+
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/config"
 	"reimagined_eureka/internal/server/infra/logging"
-
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type PGUserRepo struct {

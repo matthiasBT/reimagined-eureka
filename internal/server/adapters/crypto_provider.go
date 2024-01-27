@@ -1,9 +1,9 @@
 package adapters
 
 import (
-	"reimagined_eureka/internal/server/infra/logging"
-
 	"golang.org/x/crypto/bcrypt"
+
+	"reimagined_eureka/internal/server/infra/logging"
 )
 
 type CryptoProvider struct {

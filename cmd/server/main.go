@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
+
 	"reimagined_eureka/internal/server/adapters"
 	"reimagined_eureka/internal/server/adapters/repositories"
 	"reimagined_eureka/internal/server/entities"
@@ -17,9 +20,6 @@ import (
 	"reimagined_eureka/internal/server/infra/config"
 	"reimagined_eureka/internal/server/infra/logging"
 	"reimagined_eureka/internal/server/usecases"
-
-	"github.com/go-chi/chi/v5"
-	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func setupServer(logger logging.ILogger, userRepo entities.UserRepo, controller *usecases.BaseController) *chi.Mux {

@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/jmoiron/sqlx"
+
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/logging"
 	"reimagined_eureka/internal/server/infra/migrations"
-
-	"github.com/jmoiron/sqlx"
 )
 
 var txOpt = sql.TxOptions{
