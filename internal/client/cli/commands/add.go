@@ -1,9 +1,10 @@
 package commands
 
 import (
-	"awesomeProject1/internal/client/cli/entities"
 	"fmt"
 	"strconv"
+
+	"reimagined_eureka/internal/client/cli/entities"
 )
 
 type AddCommand struct {

@@ -1,7 +1,7 @@
 package states
 
 import (
-	entities2 "awesomeProject1/internal/client/cli/entities"
+	entities2 "reimagined_eureka/internal/client/cli/entities"
 )
 
 type QuitState struct {

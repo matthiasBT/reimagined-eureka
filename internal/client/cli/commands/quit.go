@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"awesomeProject1/internal/client/cli/entities"
+	"reimagined_eureka/internal/client/cli/entities"
 )
 
 type QuitCommand struct {

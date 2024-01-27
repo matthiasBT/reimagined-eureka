@@ -1,8 +1,8 @@
 package states
 
 import (
-	commands2 "awesomeProject1/internal/client/cli/commands"
-	"awesomeProject1/internal/client/cli/entities"
+	commands2 "reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/entities"
 )
 
 type InitialState struct {

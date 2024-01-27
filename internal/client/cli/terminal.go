@@ -1,11 +1,12 @@
 package cli
 
 import (
-	"awesomeProject1/internal/client/cli/entities"
-	states2 "awesomeProject1/internal/client/cli/states"
 	"bufio"
 	"fmt"
 	"os"
+
+	"reimagined_eureka/internal/client/cli/entities"
+	states2 "reimagined_eureka/internal/client/cli/states"
 )
 
 const PromptGeneric = "> "

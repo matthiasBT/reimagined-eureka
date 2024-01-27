@@ -1,9 +1,10 @@
 package states
 
 import (
-	entities2 "awesomeProject1/internal/client/cli/entities"
 	"fmt"
 	"strings"
+
+	entities2 "reimagined_eureka/internal/client/cli/entities"
 )
 
 const ResultUnknownCommand = "Unknown command"
