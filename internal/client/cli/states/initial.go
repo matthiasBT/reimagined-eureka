@@ -33,7 +33,7 @@ func NewInitialState(
 	//quit
 	cmds := []entities.Command{
 		&cliCommands.LoginCommand{Logger: logger, Storage: storage, Proxy: proxy, CryptoProvider: cryptoProvider},
-		// &cliCommands.RegisterCommand{Logger: logger, Storage: storage, Proxy: proxy, CryptoProvider: cryptoProvider},
+		&cliCommands.RegisterCommand{Logger: logger, Storage: storage, Proxy: proxy, CryptoProvider: cryptoProvider},
 		&cliCommands.QuitCommand{},
 	}
 	return &InitialState{GeneralState: GeneralState{Commands: cmds}, logger: logger, storage: storage, proxy: proxy}
