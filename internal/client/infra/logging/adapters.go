@@ -49,6 +49,10 @@ func (l *ColorLogger) Warningln(format string, args ...interface{}) {
 	l.println(color.HiYellowString, format, args...)
 }
 
+func (l *ColorLogger) Warning(format string, args ...interface{}) {
+	l.print(color.HiYellowString, format, args...)
+}
+
 func (l *ColorLogger) Debugln(format string, args ...interface{}) {
 	l.println(color.HiWhiteString, format, args...)
 }

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 
@@ -75,10 +76,31 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 
 func (c *LoginCommand) readPasswordMasked() (string, error) {
 	c.Logger.Info("Enter password: ")
-	passwordBytes, err := term.ReadPassword(int(os.Stdin.Fd())) // TODO: make customizable?
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read user password: %v", err)
 	}
-	password := string(passwordBytes)
-	return password, nil
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	reader := bufio.NewReader(os.Stdin)
+	var password []rune
+	for {
+		r, _, err := reader.ReadRune()
+		if err != nil {
+			return "", fmt.Errorf("failed to read user password: %v", err)
+		}
+		switch r {
+		case '\r', '\n':
+			c.Logger.Warning("\n\r")
+			return string(password), nil
+		case '\x7f', '\b': // Backspace key
+			if len(password) > 0 {
+				c.Logger.Warning("\b \b") // Move back, write space to clear, and move back again
+				password = password[:len(password)-1]
+			}
+		default:
+			c.Logger.Warning("*")
+			password = append(password, r)
+		}
+	}
 }
