@@ -13,24 +13,31 @@ import (
 )
 
 type SQLiteStorage struct {
-	db *sqlx.DB
+	logger logging.ILogger
+	db     *sqlx.DB
 }
 
 func NewSQLiteStorage(logger logging.ILogger, path string) (*SQLiteStorage, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		logger.Warning("Database doesn't exist. Creating a new database")
+		logger.Warningln("Database doesn't exist. Creating a new database")
 	}
 	db, err := sqlx.Open("sqlite3", path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the database: %v", err)
 	}
-	if err := migrations.Migrate(db); err != nil {
-		return nil, fmt.Errorf("failed to migrate the database: %v", err)
+	storage := &SQLiteStorage{logger: logger, db: db}
+	if err := storage.Init(); err != nil {
+		return nil, fmt.Errorf("failed to init the database: %v", err)
 	}
-	storage := &SQLiteStorage{db}
 	return storage, nil
 }
 
 func (s *SQLiteStorage) Init() error {
-	return nil
+	return migrations.Migrate(s.db)
+}
+
+func (s *SQLiteStorage) Shutdown() {
+	if err := s.db.Close(); err != nil {
+		s.logger.Failureln("Failed to shut down the database: %v", err)
+	}
 }

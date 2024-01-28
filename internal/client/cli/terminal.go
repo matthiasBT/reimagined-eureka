@@ -2,63 +2,67 @@ package cli
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 
-	"reimagined_eureka/internal/client/cli/entities"
-	states2 "reimagined_eureka/internal/client/cli/states"
+	cliEntities "reimagined_eureka/internal/client/cli/entities"
+	cliStates "reimagined_eureka/internal/client/cli/states"
+	clientEntities "reimagined_eureka/internal/client/entities"
+	"reimagined_eureka/internal/client/infra/logging"
 )
 
 const PromptGeneric = "> "
 const PromptOnExit = "Bye!"
 
 type Terminal struct {
-	currState entities.State
+	logger    logging.ILogger
+	storage   clientEntities.IStorage
+	proxy     clientEntities.IProxy
+	currState cliEntities.State
 	scanner   *bufio.Scanner
 }
 
-func NewTerminal() *Terminal {
+func NewTerminal(logger logging.ILogger, storage clientEntities.IStorage, proxy clientEntities.IProxy) *Terminal {
 	return &Terminal{
-		currState: states2.NewInitialState(),
+		logger:    logger,
+		storage:   storage,
+		proxy:     proxy,
+		currState: cliStates.NewInitialState(),
 		scanner:   bufio.NewScanner(os.Stdin), // TODO: pass as parameter
 	}
 }
 
 func (t *Terminal) Run() {
 	for {
-		fmt.Println(t.currState.GetPrompt())
-		fmt.Print(PromptGeneric)
+		t.logger.Infoln(t.currState.GetPrompt())
+		t.logger.Info(PromptGeneric)
 		scanner := bufio.NewScanner(os.Stdin)
 		if scanner.Scan() {
 			input := scanner.Text()
 			nextState, result := t.currState.Execute(input)
 			if result.SuccessMessage != "" {
-				fmt.Println(result.SuccessMessage)
+				t.logger.Successln(result.SuccessMessage)
 			} else if result.FailureMessage != "" {
-				fmt.Println(result.FailureMessage)
+				t.logger.Failureln(result.FailureMessage)
 			}
 			if nextState != nil {
-				if _, ok := nextState.(*states2.QuitState); ok {
-					t.exitNormal()
+				if _, ok := nextState.(*cliStates.QuitState); ok {
+					t.logger.Successln(PromptOnExit)
+					return
 				}
 				t.currState = nextState
 			}
-			fmt.Println()
+			t.logger.Infoln("")
 			continue
 		}
 		t.handleInputErrors()
-		t.exitNormal()
+		t.logger.Successln(PromptOnExit)
+		return
 	}
 }
 
 func (t *Terminal) handleInputErrors() {
 	if err := t.scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading input:", err) // TODO: handle errors
+		t.logger.Failureln("Failureln reading input:", err) // TODO: handle errors
 		os.Exit(1)
 	}
-}
-
-func (t *Terminal) exitNormal() {
-	fmt.Println(PromptOnExit)
-	os.Exit(0)
 }

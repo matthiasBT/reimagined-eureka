@@ -1,5 +1,6 @@
 package entities
 
-type Storage interface {
+type IStorage interface {
 	Init() error
+	Shutdown()
 }
