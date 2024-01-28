@@ -69,7 +69,7 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	if err := c.Storage.SaveUser(newUser); err != nil {
+	if err := c.Storage.SaveUser(newUser, userData.Entropy); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}

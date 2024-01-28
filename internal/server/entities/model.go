@@ -9,12 +9,13 @@ type ContextKey struct {
 }
 
 type User struct {
-	ID           int    `db:"id"`
-	Login        string `db:"login"`
-	PasswordHash []byte `db:"password_hash"`
-	Entropy      []byte `db:"entropy"`
-	EntropySalt  []byte `db:"entropy_salt"`
-	EntropyNonce []byte `db:"entropy_nonce"`
+	ID               int    `db:"id"`
+	Login            string `db:"login"`
+	PasswordHash     []byte `db:"password_hash"`
+	Entropy          string `db:"entropy"`
+	EntropyEncrypted []byte `db:"entropy_encrypted"`
+	EntropySalt      []byte `db:"entropy_salt"`
+	EntropyNonce     []byte `db:"entropy_nonce"`
 }
 
 type Session struct {

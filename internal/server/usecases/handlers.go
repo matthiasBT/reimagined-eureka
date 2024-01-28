@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
@@ -86,6 +87,20 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Failed to create a user session"))
 		return
 	}
+	entropy := common.EncryptionResult{
+		Plaintext:  user.Entropy,
+		Ciphertext: user.EntropyEncrypted,
+		Salt:       user.EntropySalt,
+		Nonce:      user.EntropyNonce,
+	}
+	entropyData, err := json.Marshal(entropy)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to write user entropy data"))
+		return
+	}
+	w.Write(entropyData)
 	authorize(w, session)
 }
 

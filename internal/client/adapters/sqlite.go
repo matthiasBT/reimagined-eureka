@@ -14,6 +14,7 @@ import (
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
 	"reimagined_eureka/internal/client/infra/migrations"
+	"reimagined_eureka/internal/common"
 )
 
 var txOpt = sql.TxOptions{
@@ -84,9 +85,21 @@ func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {
 	return &user, nil
 }
 
-func (s *SQLiteStorage) SaveUser(user *clientEntities.User) error {
-	query := "insert into users(login, pwd_hash) values ($1, $2)"
-	if _, err := s.db.Exec(query, user.Login, user.PasswordHash); err != nil {
+func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.EncryptionResult) error {
+	query := `
+		insert into users(login, pwd_hash, entropy, entropy_encrypted, entropy_salt, entropy_nonce)
+		values ($1, $2, $3, $4, $5, $6)
+	`
+	_, err := s.db.Exec(
+		query,
+		user.Login,
+		user.PasswordHash,
+		entropy.Plaintext,
+		entropy.Ciphertext,
+		entropy.Salt,
+		entropy.Nonce,
+	)
+	if err != nil {
 		return err
 	}
 	return nil

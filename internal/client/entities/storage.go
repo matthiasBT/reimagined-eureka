@@ -1,11 +1,13 @@
 package entities
 
+import "reimagined_eureka/internal/common"
+
 type IStorage interface {
 	Init() error
 	Shutdown()
 	Tx() (ITx, error)
 	ReadUser(login string) (*User, error)
-	SaveUser(user *User) error
+	SaveUser(user *User, entropy *common.EncryptionResult) error
 }
 
 type ITx interface {

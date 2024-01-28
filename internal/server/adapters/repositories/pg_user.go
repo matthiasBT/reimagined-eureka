@@ -33,11 +33,11 @@ func (r *PGUserRepo) CreateUser(
 	r.logger.Infof("Creating a new user: %s", login)
 	var user = entities.User{}
 	query := `
-		insert into users(login, password_hash, entropy, entropy_salt, entropy_nonce)
-		values ($1, $2, $3, $4, $5) returning *
+		insert into users(login, password_hash, entropy, entropy_encrypted, entropy_salt, entropy_nonce)
+		values ($1, $2, $3, $4, $5, $6) returning *
 	`
 	if err := tx.GetContext(
-		ctx, &user, query, login, pwdhash, entropy.Result, entropy.Salt, entropy.Nonce,
+		ctx, &user, query, login, pwdhash, entropy.Plaintext, entropy.Ciphertext, entropy.Salt, entropy.Nonce,
 	); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {

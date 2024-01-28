@@ -3,15 +3,11 @@
 CREATE TABLE users (
     id INTEGER PRIMARY KEY NOT NULL,
     login TEXT NOT NULL UNIQUE,
-    pwd_hash BLOB NOT NULL
-);
-CREATE TABLE master_key_data (
-    id INTEGER PRIMARY KEY NOT NULL,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    pwd_hash BLOB NOT NULL,
     entropy TEXT NOT NULL,
     entropy_encrypted BLOB NOT NULL,
-    kdf_salt BLOB NOT NULL,
-    kdf_nonce BLOB NOT NULL
+    entropy_salt BLOB NOT NULL,
+    entropy_nonce BLOB NOT NULL
 );
 CREATE TABLE cookies (
     id integer PRIMARY KEY NOT NULL,

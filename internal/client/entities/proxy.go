@@ -10,4 +10,5 @@ type IProxy interface {
 
 type UserDataResponse struct {
 	SessionCookie string
+	Entropy       *common.EncryptionResult
 }

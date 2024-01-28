@@ -1,12 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE users (
-    id            INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    login         TEXT UNIQUE NOT NULL,
-    password_hash BYTEA NOT NULL,
-    entropy       BYTEA NOT NULL,
-    entropy_salt  BYTEA NOT NULL,
-    entropy_nonce BYTEA NOT NULL
+    id                INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    login             TEXT UNIQUE NOT NULL,
+    password_hash     BYTEA NOT NULL,
+    entropy           TEXT NOT NULL,
+    entropy_encrypted BYTEA NOT NULL,
+    entropy_salt      BYTEA NOT NULL,
+    entropy_nonce     BYTEA NOT NULL
 );
 CREATE TABLE sessions (
     id         INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

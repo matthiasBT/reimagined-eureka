@@ -31,7 +31,11 @@ func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired
 		w.Write([]byte("Login or password is too short"))
 		return nil
 	}
-	if entropyRequired && creds.Entropy.Result == nil || creds.Entropy.Salt == nil || creds.Entropy.Nonce == nil {
+	if entropyRequired && (creds.Entropy == nil ||
+		creds.Entropy.Plaintext == "" ||
+		creds.Entropy.Ciphertext == nil ||
+		creds.Entropy.Salt == nil ||
+		creds.Entropy.Nonce == nil) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("All entropy fields must be supplied"))
 		return nil

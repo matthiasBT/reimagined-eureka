@@ -69,7 +69,7 @@ func (c *CryptoProvider) Encrypt(what string) (*common.EncryptionResult, error) 
 		return nil, fmt.Errorf("GCM nonce generation failed: %v", err)
 	}
 	ciphertext := gcm.Seal(nil, nonce, []byte(what), nil)
-	return &common.EncryptionResult{Result: ciphertext, Salt: salt, Nonce: nonce}, nil
+	return &common.EncryptionResult{Ciphertext: ciphertext, Salt: salt, Nonce: nonce}, nil
 }
 
 func (c *CryptoProvider) hashPassword(password string) ([]byte, error) {

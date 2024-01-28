@@ -69,14 +69,14 @@ func (p *ServerProxy) signInOrUp(
 	if resp == nil {
 		return nil, fmt.Errorf("no response from the server")
 	}
-	if err != nil || resp.StatusCode != http.StatusOK {
-		body, bodyErr := io.ReadAll(resp.Body)
-		defer resp.Body.Close()
+	body, bodyErr := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil || bodyErr != nil || resp.StatusCode != http.StatusOK {
 		var respErr error
 		if bodyErr == nil {
 			respErr = fmt.Errorf("server error response: %s", string(body))
 		} else {
-			respErr = errors.Wrap(err, fmt.Errorf("failed to read body: %v", bodyErr).Error())
+			respErr = fmt.Errorf("failed to read body: %v", bodyErr)
 		}
 		if err == nil {
 			err = respErr
@@ -85,10 +85,18 @@ func (p *ServerProxy) signInOrUp(
 		}
 		return nil, fmt.Errorf("request failed: %v", err)
 	}
-
+	var userEntropy *common.EncryptionResult
+	if entropy == nil { // for sign-up requests
+		if err := json.Unmarshal(body, &userEntropy); err != nil {
+			return nil, fmt.Errorf("failed to read server response: %v", err)
+		}
+	}
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == common.SessionCookieName {
-			return &clientEntities.UserDataResponse{SessionCookie: cookie.Value}, nil
+			return &clientEntities.UserDataResponse{
+				Entropy:       userEntropy,
+				SessionCookie: cookie.Value,
+			}, nil
 		}
 	}
 	return nil, fmt.Errorf("incorrect response from server: no session cookie set")

@@ -75,29 +75,29 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 	}
 	defer tx.Commit() // TODO: does it make sense to try to handle commit and rollback errors?
 	c.CryptoProvider.SetMasterKey(c.masterKey)
-	encrypted, err := c.CryptoProvider.Encrypt(c.entropy)
+	entropyEncrypted, err := c.CryptoProvider.Encrypt(c.entropy)
 	if err != nil {
 		msg := fmt.Errorf("failed to sign up: %v", err)
-		tx.Rollback()
+		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
+	entropyEncrypted.Plaintext = c.entropy
 
-	userData, err := c.LoginCommand.Proxy.Register(c.LoginCommand.login, c.LoginCommand.password, encrypted)
+	userData, err := c.LoginCommand.Proxy.Register(c.LoginCommand.login, c.LoginCommand.password, entropyEncrypted)
 	if err != nil {
 		msg := fmt.Errorf("failed to sign up: %v", err)
-		tx.Rollback()
+		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	newUser := &clientEntities.User{Login: c.LoginCommand.login}
 	if err := c.LoginCommand.CryptoProvider.HashPassword(newUser, c.LoginCommand.password); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
-		tx.Rollback()
+		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	// TODO: store the variable named "encrypted" too
-	if err := c.LoginCommand.Storage.SaveUser(newUser); err != nil {
+	if err := c.LoginCommand.Storage.SaveUser(newUser, entropyEncrypted); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
-		tx.Rollback()
+		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	return cliEntities.CommandResult{

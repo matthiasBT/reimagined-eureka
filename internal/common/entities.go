@@ -7,5 +7,6 @@ type Credentials struct {
 }
 
 type EncryptionResult struct {
-	Result, Salt, Nonce []byte
+	Plaintext               string
+	Ciphertext, Salt, Nonce []byte
 }
