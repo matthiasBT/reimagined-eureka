@@ -5,11 +5,11 @@ import (
 	"reimagined_eureka/internal/client/cli/entities"
 )
 
-type SignedInState struct {
+type CheckMasterKeyState struct {
 	GeneralState
 }
 
-func NewSignedInState() *SignedInState {
+func NewSignedInState() *CheckMasterKeyState {
 	//commands:
 	//
 	//sign in
@@ -24,5 +24,5 @@ func NewSignedInState() *SignedInState {
 	cmds := []entities.Command{
 		&commands2.QuitCommand{},
 	}
-	return &SignedInState{GeneralState{Commands: cmds}}
+	return &CheckMasterKeyState{GeneralState{Commands: cmds}}
 }

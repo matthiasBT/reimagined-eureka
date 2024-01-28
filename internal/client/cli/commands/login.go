@@ -2,6 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"os"
+
+	"golang.org/x/term"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
@@ -25,10 +28,14 @@ func (c *LoginCommand) GetDescription() string {
 }
 
 func (c *LoginCommand) Validate(args ...string) error {
-	if len(args) != 2 {
-		return fmt.Errorf("example: login <login> <password>")
-	} // TODO: ******?
-	c.login, c.password = args[0], args[1]
+	if len(args) != 1 {
+		return fmt.Errorf("example: login <login>")
+	}
+	password, err := c.readPasswordMasked()
+	if err != nil {
+		return fmt.Errorf("failed to read password: %v", err)
+	}
+	c.login, c.password = args[0], password
 	return nil
 }
 
@@ -46,7 +53,7 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		return cliEntities.CommandResult{SuccessMessage: "Logged in successfully (locally)"}
 	}
 	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
-	_, err = c.Proxy.LogIn(c.login, c.password) // TODO: userData: cookie
+	userData, err := c.Proxy.LogIn(c.login, c.password)
 	if err != nil {
 		msg := fmt.Errorf("failed to log in: %v", err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
@@ -60,5 +67,18 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	return cliEntities.CommandResult{SuccessMessage: "Logged in successfully (on server)"}
+	return cliEntities.CommandResult{
+		SuccessMessage: "Logged in successfully (on server)",
+		SessionCookie:  userData.SessionCookie,
+	}
+}
+
+func (c *LoginCommand) readPasswordMasked() (string, error) {
+	c.Logger.Info("Enter password: ")
+	passwordBytes, err := term.ReadPassword(int(os.Stdin.Fd())) // TODO: make customizable?
+	if err != nil {
+		return "", err
+	}
+	password := string(passwordBytes)
+	return password, nil
 }

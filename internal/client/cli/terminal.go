@@ -28,12 +28,13 @@ func NewTerminal(
 	proxy clientEntities.IProxy,
 	cryptoProvider *adapters.CryptoProvider,
 ) *Terminal {
+	scanner := bufio.NewScanner(os.Stdin) // TODO: pass as parameter
 	return &Terminal{
 		logger:    logger,
 		storage:   storage,
 		proxy:     proxy,
 		currState: cliStates.NewInitialState(logger, storage, proxy, cryptoProvider),
-		scanner:   bufio.NewScanner(os.Stdin), // TODO: pass as parameter
+		scanner:   scanner,
 	}
 }
 

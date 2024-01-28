@@ -14,6 +14,7 @@ require (
 	github.com/pressly/goose/v3 v3.17.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.17.0
+	golang.org/x/term v0.15.0
 )
 
 require (
