@@ -19,9 +19,11 @@ type ColorLogger struct {
 
 func (l *ColorLogger) println(printer func(string, ...interface{}) string, format string, args ...interface{}) {
 	if args == nil {
-		fmt.Println(printer(format))
+		text := printer(format)
+		fmt.Println(text)
 	} else {
-		fmt.Println(printer(format, args))
+		text := printer(format, args...)
+		fmt.Println(text)
 	}
 }
 

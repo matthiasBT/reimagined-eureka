@@ -28,12 +28,17 @@ func NewPGUserRepo(logger logging.ILogger, storage entities.Storage) *PGUserRepo
 }
 
 func (r *PGUserRepo) CreateUser(
-	ctx context.Context, tx entities.Tx, login string, pwdhash []byte,
+	ctx context.Context, tx entities.Tx, login string, pwdhash []byte, entropy *common.EncryptionResult,
 ) (*entities.User, error) {
 	r.logger.Infof("Creating a new user: %s", login)
 	var user = entities.User{}
-	query := "insert into users(login, password_hash) values ($1, $2) returning *"
-	if err := tx.GetContext(ctx, &user, query, login, pwdhash); err != nil {
+	query := `
+		insert into users(login, password_hash, entropy, entropy_salt, entropy_nonce)
+		values ($1, $2, $3, $4, $5) returning *
+	`
+	if err := tx.GetContext(
+		ctx, &user, query, login, pwdhash, entropy.Result, entropy.Salt, entropy.Nonce,
+	); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 			r.logger.Infof("Login is already taken")

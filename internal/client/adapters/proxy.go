@@ -26,22 +26,29 @@ func NewServerProxy(serverURL *url.URL) *ServerProxy {
 	return &ServerProxy{serverURL: serverURL}
 }
 
-func (p *ServerProxy) LogIn(login string, password string) (*clientEntities.UserDataResponse, error) { // TODO: return some result from server (cookie, encrypted text)
-	return p.signInOrUp(login, password, pathSignIn)
+func (p *ServerProxy) LogIn(login string, password string) (*clientEntities.UserDataResponse, error) {
+	return p.signInOrUp(login, password, pathSignIn, nil)
 }
 
-func (p *ServerProxy) Register(login string, password string) (*clientEntities.UserDataResponse, error) {
-	return p.signInOrUp(login, password, pathSignUp)
+func (p *ServerProxy) Register(
+	login string, password string, entropy *common.EncryptionResult,
+) (*clientEntities.UserDataResponse, error) {
+	return p.signInOrUp(login, password, pathSignUp, entropy)
 }
 
-func (p *ServerProxy) signInOrUp(login, password, path string) (*clientEntities.UserDataResponse, error) { // TODO: return some result from server (cookie, encrypted text)
+func (p *ServerProxy) signInOrUp(
+	login, password, path string,
+	entropy *common.EncryptionResult,
+) (*clientEntities.UserDataResponse, error) {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
 		Path:   urlPrefix + path,
 	}
 	authReqBody := common.Credentials{Login: login, Password: password}
-
+	if entropy != nil {
+		authReqBody.Entropy = entropy
+	}
 	payload, err := json.Marshal(authReqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)

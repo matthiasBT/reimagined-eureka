@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -14,6 +15,23 @@ import (
 	"reimagined_eureka/internal/client/infra/logging"
 	"reimagined_eureka/internal/client/infra/migrations"
 )
+
+var txOpt = sql.TxOptions{
+	Isolation: sql.LevelReadCommitted,
+	ReadOnly:  false,
+}
+
+type SQLiteTxx struct {
+	tx *sqlx.Tx
+}
+
+func (t *SQLiteTxx) Commit() error {
+	return t.tx.Commit()
+}
+
+func (t *SQLiteTxx) Rollback() error {
+	return t.tx.Rollback()
+}
 
 type SQLiteStorage struct {
 	logger logging.ILogger
@@ -44,6 +62,14 @@ func (s *SQLiteStorage) Shutdown() {
 	if err := s.db.Close(); err != nil {
 		s.logger.Failureln("Failed to shut down the database: %v", err)
 	}
+}
+
+func (s *SQLiteStorage) Tx() (clientEntities.ITx, error) {
+	tx, err := s.db.BeginTxx(context.Background(), &txOpt)
+	if err != nil {
+		return nil, err
+	}
+	return &SQLiteTxx{tx: tx}, nil
 }
 
 func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {

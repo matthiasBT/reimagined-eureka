@@ -11,7 +11,7 @@ import (
 )
 
 func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
-	userReq := validateUserAuthReq(w, r)
+	userReq := validateUserAuthReq(w, r, true)
 	if userReq == nil {
 		return
 	}
@@ -27,7 +27,7 @@ func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Commit()
-	user, err := c.userRepo.CreateUser(r.Context(), tx, userReq.Login, pwdhash)
+	user, err := c.userRepo.CreateUser(r.Context(), tx, userReq.Login, pwdhash, userReq.Entropy)
 	if err != nil {
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrLoginAlreadyTaken) {
@@ -50,7 +50,7 @@ func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
-	userReq := validateUserAuthReq(w, r)
+	userReq := validateUserAuthReq(w, r, false)
 	if userReq == nil {
 		return
 	}

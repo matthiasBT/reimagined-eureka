@@ -8,10 +8,7 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-const MinLoginLength = 6
-const MinPasswordLength = 6
-
-func validateUserAuthReq(w http.ResponseWriter, r *http.Request) *common.Credentials {
+func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired bool) *common.Credentials {
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Supply data as JSON"))
@@ -29,9 +26,14 @@ func validateUserAuthReq(w http.ResponseWriter, r *http.Request) *common.Credent
 		w.Write([]byte("Failed to parse user create request"))
 		return nil
 	}
-	if len(creds.Login) < MinLoginLength || len(creds.Password) < MinPasswordLength {
+	if len(creds.Login) < common.MinLoginLength || len(creds.Password) < common.MinPasswordLength {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Login or password is too short"))
+		return nil
+	}
+	if entropyRequired && creds.Entropy.Result == nil || creds.Entropy.Salt == nil || creds.Entropy.Nonce == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("All entropy fields must be supplied"))
 		return nil
 	}
 	return &creds

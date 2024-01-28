@@ -6,15 +6,12 @@ import (
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
+	"reimagined_eureka/internal/common"
 )
 
 type RegisterCommand struct {
 	LoginCommand
-	Logger          logging.ILogger
-	Storage         clientEntities.IStorage
-	Proxy           clientEntities.IProxy
-	CryptoProvider  clientEntities.ICryptoProvider
-	login, password string
+	masterKey, entropy string
 }
 
 func NewRegisterCommand(
@@ -45,27 +42,62 @@ func (c *RegisterCommand) Validate(args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("example: register <login>")
 	}
-	password, err := c.readPasswordMasked()
-	if err != nil {
-		return fmt.Errorf("failed to read password: %v", err)
+	login := args[0]
+	if len(login) < common.MinLoginLength {
+		return fmt.Errorf("login is shorter than %d characters", common.MinLoginLength)
 	}
-	c.LoginCommand.login, c.LoginCommand.password = args[0], password
+	password, err := readSecretValueMasked(c.Logger, "user password", common.MinPasswordLength, 0)
+	if err != nil {
+		return fmt.Errorf("failed to read user password: %v", err)
+	}
+	masterKey, err := readSecretValueMasked(c.Logger, "master key", MinMasterKeyLength, MaxMasterKeyLength)
+	if err != nil {
+		return fmt.Errorf("failed to read master key: %v", err)
+	}
+	c.Logger.Warningln("Now, it's time to create some random text that'll be used for master key verification")
+	c.Logger.Warningln("You don't need to remember or store this text. Think of it as of entropy")
+	entropy, err := readSecretValueMasked(c.Logger, "entropy", MinEntropyLength, MaxEntropyLength)
+	if err != nil {
+		return fmt.Errorf("failed to read entropy: %v", err)
+	}
+	c.LoginCommand.login = login
+	c.LoginCommand.password = password
+	c.masterKey = masterKey
+	c.entropy = entropy
 	return nil
 }
 
 func (c *RegisterCommand) Execute() cliEntities.CommandResult {
-	userData, err := c.LoginCommand.Proxy.Register(c.LoginCommand.login, c.LoginCommand.password)
+	tx, err := c.Storage.Tx()
+	if err != nil {
+		msg := fmt.Errorf("failed to register the user: %v", err)
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
+	}
+	defer tx.Commit() // TODO: does it make sense to try to handle commit and rollback errors?
+	c.CryptoProvider.SetMasterKey(c.masterKey)
+	encrypted, err := c.CryptoProvider.Encrypt(c.entropy)
 	if err != nil {
 		msg := fmt.Errorf("failed to sign up: %v", err)
+		tx.Rollback()
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
+	}
+
+	userData, err := c.LoginCommand.Proxy.Register(c.LoginCommand.login, c.LoginCommand.password, encrypted)
+	if err != nil {
+		msg := fmt.Errorf("failed to sign up: %v", err)
+		tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	newUser := &clientEntities.User{Login: c.LoginCommand.login}
 	if err := c.LoginCommand.CryptoProvider.HashPassword(newUser, c.LoginCommand.password); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
+		tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
+	// TODO: store the variable named "encrypted" too
 	if err := c.LoginCommand.Storage.SaveUser(newUser); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
+		tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	return cliEntities.CommandResult{

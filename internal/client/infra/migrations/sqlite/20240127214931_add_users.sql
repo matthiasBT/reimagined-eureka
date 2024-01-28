@@ -4,15 +4,25 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY NOT NULL,
     login TEXT NOT NULL UNIQUE,
     pwd_hash BLOB NOT NULL
-
---     kdf_salt BLOB NOT NULL, -- generated for master key and salt kdf
---     master_key_checker TEXT NOT NULL,
---     master_key_checker_encrypted BLOB NOT NULL,
---     secret_cookie_encrypted BLOB  -- TODO: encrypt with master key
+);
+CREATE TABLE master_key_data (
+    id INTEGER PRIMARY KEY NOT NULL,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    entropy TEXT NOT NULL,
+    entropy_encrypted BLOB NOT NULL,
+    kdf_salt BLOB NOT NULL,
+    kdf_nonce BLOB NOT NULL
+);
+CREATE TABLE cookies (
+    id integer PRIMARY KEY NOT NULL,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    value_encrypted BLOB NOT NULL
 );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
+DROP TABLE cookies;
+DROP TABLE master_key_data;
 DROP TABLE users;
 -- +goose StatementEnd

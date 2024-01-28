@@ -1,24 +1,25 @@
 -- +goose Up
 -- +goose StatementBegin
-create table users
-(
-    id            integer primary key generated always as identity,
-    login         text unique not null,
-    password_hash bytea       not null
+CREATE TABLE users (
+    id            INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    login         TEXT UNIQUE NOT NULL,
+    password_hash BYTEA NOT NULL,
+    entropy       BYTEA NOT NULL,
+    entropy_salt  BYTEA NOT NULL,
+    entropy_nonce BYTEA NOT NULL
 );
-create table sessions
-(
-    id         integer primary key generated always as identity,
-    user_id    integer references users (id) not null,
-    token      text unique                   not null,
-    expires_at timestamptz                   not null
+CREATE TABLE sessions (
+    id         INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id    INTEGER REFERENCES users(id) NOT NULL,
+    token      TEXT UNIQUE NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL
 );
-create index user_sessions_idx on sessions (user_id);
+CREATE INDEX user_sessions_idx ON sessions(user_id);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-drop index user_sessions_idx;
-drop table sessions;
-drop table users;
+DROP INDEX user_sessions_idx;
+DROP TABLE sessions;
+DROP TABLE users;
 -- +goose StatementEnd

@@ -1,15 +1,12 @@
 package commands
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-
-	"golang.org/x/term"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
+	"reimagined_eureka/internal/common"
 )
 
 type LoginCommand struct {
@@ -32,11 +29,15 @@ func (c *LoginCommand) Validate(args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("example: login <login>")
 	}
-	password, err := c.readPasswordMasked()
-	if err != nil {
-		return fmt.Errorf("failed to read password: %v", err)
+	login := args[0]
+	if len(login) < common.MinLoginLength {
+		return fmt.Errorf("login is shorter than %d characters", common.MinLoginLength)
 	}
-	c.login, c.password = args[0], password
+	password, err := readSecretValueMasked(c.Logger, "user password", common.MinPasswordLength, 0)
+	if err != nil {
+		return fmt.Errorf("failed to read user password: %v", err)
+	}
+	c.login, c.password = login, password
 	return nil
 }
 
@@ -58,7 +59,7 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
-	userData, err := c.Proxy.LogIn(c.login, c.password)
+	userData, err := c.Proxy.LogIn(c.login, c.password) // TODO: received and store entropy
 	if err != nil {
 		msg := fmt.Errorf("failed to log in: %v", err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
@@ -76,36 +77,5 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		SuccessMessage: "Logged in successfully (on server)",
 		SessionCookie:  userData.SessionCookie,
 		LoggedIn:       true,
-	}
-}
-
-func (c *LoginCommand) readPasswordMasked() (string, error) {
-	c.Logger.Info("Enter password: ")
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		return "", fmt.Errorf("failed to read user password: %v", err)
-	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
-
-	reader := bufio.NewReader(os.Stdin)
-	var password []rune
-	for {
-		r, _, err := reader.ReadRune()
-		if err != nil {
-			return "", fmt.Errorf("failed to read user password: %v", err)
-		}
-		switch r {
-		case '\r', '\n':
-			c.Logger.Warning("\n\r")
-			return string(password), nil
-		case '\x7f', '\b': // Backspace key
-			if len(password) > 0 {
-				c.Logger.Warning("\b \b") // Move back, write space to clear, and move back again
-				password = password[:len(password)-1]
-			}
-		default:
-			c.Logger.Warning("*")
-			password = append(password, r)
-		}
 	}
 }
