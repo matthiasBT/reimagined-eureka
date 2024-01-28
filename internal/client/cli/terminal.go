@@ -26,7 +26,7 @@ func NewTerminal(logger logging.ILogger, storage clientEntities.IStorage, proxy 
 		logger:    logger,
 		storage:   storage,
 		proxy:     proxy,
-		currState: cliStates.NewInitialState(),
+		currState: cliStates.NewInitialState(storage, proxy),
 		scanner:   bufio.NewScanner(os.Stdin), // TODO: pass as parameter
 	}
 }

@@ -1,7 +1,11 @@
 package entities
 
 type IProxy interface {
-	SignIn(string, string) error
-	SignUp(string, string) error
+	SignIn(login string, password string) (*UserDataResponse, error)
+	SignUp(login string, password string) (*UserDataResponse, error)
 	// SetMasterKey(byte) error
+}
+
+type UserDataResponse struct {
+	SessionCookie string
 }

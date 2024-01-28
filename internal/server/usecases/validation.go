@@ -5,34 +5,34 @@ import (
 	"io"
 	"net/http"
 
-	"reimagined_eureka/internal/server/entities"
+	"reimagined_eureka/internal/common"
 )
 
-const MinLoginLength = 5
-const MinPasswordLength = 5
+const MinLoginLength = 6
+const MinPasswordLength = 6
 
-func validateUserAuthReq(w http.ResponseWriter, r *http.Request) *entities.UserAuthRequest {
+func validateUserAuthReq(w http.ResponseWriter, r *http.Request) *common.Credentials {
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Supply data as JSON"))
 		return nil
 	}
-	var userReq entities.UserAuthRequest
+	var creds common.Credentials
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Failed to read request body"))
 		return nil
 	}
-	if err := json.Unmarshal(body, &userReq); err != nil {
+	if err := json.Unmarshal(body, &creds); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Failed to parse user create request"))
 		return nil
 	}
-	if len(userReq.Login) < MinLoginLength || len(userReq.Password) < MinPasswordLength {
+	if len(creds.Login) < MinLoginLength || len(creds.Password) < MinPasswordLength {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Login or password is too short"))
 		return nil
 	}
-	return &userReq
+	return &creds
 }

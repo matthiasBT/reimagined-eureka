@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 
+	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/config"
 	"reimagined_eureka/internal/server/infra/logging"
@@ -60,7 +61,7 @@ func (r *PGUserRepo) CreateSession(
 	return &session, nil
 }
 
-func (r *PGUserRepo) FindUser(ctx context.Context, request *entities.UserAuthRequest) (*entities.User, error) {
+func (r *PGUserRepo) FindUser(ctx context.Context, request *common.Credentials) (*entities.User, error) {
 	r.logger.Infof("Searching for a user: %s", request.Login)
 	var user = entities.User{}
 	query := "select * from users where login = $1"

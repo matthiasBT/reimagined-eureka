@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/config"
 )
@@ -94,7 +95,7 @@ func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
 
 func authorize(w http.ResponseWriter, session *entities.Session) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
+		Name:     common.SessionCookieName,
 		Value:    session.Token,
 		Path:     "/",
 		Expires:  time.Now().Add(config.SessionTTL),

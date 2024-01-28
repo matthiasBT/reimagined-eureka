@@ -32,7 +32,7 @@ func setupServer(logger logging.ILogger, userRepo entities.UserRepo, controller 
 
 func gracefulShutdown(srv *http.Server, done chan struct{}, logger logging.ILogger) {
 	quitChannel := make(chan os.Signal, 1)
-	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM) // TODO: add this for client too (close DB, etc.)
 	sig := <-quitChannel
 	logger.Infof("Received signal: %v\n", sig)
 	done <- struct{}{}

@@ -8,11 +8,6 @@ type ContextKey struct {
 	Key string
 }
 
-type UserAuthRequest struct {
-	Login    string
-	Password string
-}
-
 type User struct {
 	ID           int    `db:"id"`
 	Login        string `db:"login"`

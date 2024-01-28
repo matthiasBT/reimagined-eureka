@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/logging"
 )
@@ -17,7 +18,7 @@ func Middleware(logger logging.ILogger, userRepo entities.UserRepo) func(next ht
 				next.ServeHTTP(w, r)
 				return
 			}
-			cookie, err := r.Cookie("session_token")
+			cookie, err := r.Cookie(common.SessionCookieName)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				w.Write([]byte("Missing session cookie"))

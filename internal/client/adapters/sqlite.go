@@ -37,6 +37,7 @@ func (s *SQLiteStorage) Init() error {
 }
 
 func (s *SQLiteStorage) Shutdown() {
+	s.logger.Debugln("Closing the database. Your data will be saved")
 	if err := s.db.Close(); err != nil {
 		s.logger.Failureln("Failed to shut down the database: %v", err)
 	}
