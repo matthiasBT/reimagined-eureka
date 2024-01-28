@@ -10,5 +10,4 @@ type IStorage interface {
 type User struct {
 	Login        string `db:"login"`
 	PasswordHash []byte `db:"pwd_hash"`
-	PasswordSalt []byte `db:"pwd_salt"`
 }

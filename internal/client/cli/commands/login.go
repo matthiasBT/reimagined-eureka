@@ -38,13 +38,10 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		return cliEntities.CommandResult{FailureMessage: err.Error()}
 	}
 	if user != nil {
-		pwdValid, err := c.CryptoProvider.VerifyPassword(user, c.password)
+		err := c.CryptoProvider.VerifyPassword(user, c.password)
 		if err != nil {
-			msg := fmt.Errorf("failed to verify user password: %v", err)
+			msg := fmt.Errorf("password verification failed: %v", err)
 			return cliEntities.CommandResult{FailureMessage: msg.Error()}
-		}
-		if !pwdValid {
-			return cliEntities.CommandResult{FailureMessage: "invalid password"}
 		}
 		return cliEntities.CommandResult{SuccessMessage: "Logged in successfully (locally)"}
 	}
@@ -55,7 +52,7 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	newUser := &clientEntities.User{Login: c.login}
-	if err := c.CryptoProvider.PrepareUserForSave(newUser); err != nil {
+	if err := c.CryptoProvider.HashPassword(newUser, c.password); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}

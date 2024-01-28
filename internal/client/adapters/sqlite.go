@@ -48,7 +48,7 @@ func (s *SQLiteStorage) Shutdown() {
 
 func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {
 	var user = clientEntities.User{}
-	query := "select login from users where login = $1"
+	query := "select login, pwd_hash from users where login = $1"
 	if err := s.db.Get(&user, query, login); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -59,8 +59,8 @@ func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {
 }
 
 func (s *SQLiteStorage) SaveUser(user *clientEntities.User) error {
-	query := "insert into users(login, pwd_hash, pwd_salt) values ($1, $2, $3)"
-	if _, err := s.db.Exec(query, user.Login, user.PasswordHash, user.PasswordSalt); err != nil {
+	query := "insert into users(login, pwd_hash) values ($1, $2)"
+	if _, err := s.db.Exec(query, user.Login, user.PasswordHash); err != nil {
 		return err
 	}
 	return nil
