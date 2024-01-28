@@ -30,7 +30,7 @@ func NewBaseController(
 
 func (c *BaseController) Route() *chi.Mux {
 	r := chi.NewRouter()
-	r.Post("/user/register", c.register)
+	r.Post("/user/register", c.signUp)
 	r.Post("/user/login", c.signIn)
 	r.Get("/ping", c.ping)
 	return r

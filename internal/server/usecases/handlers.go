@@ -10,7 +10,7 @@ import (
 	"reimagined_eureka/internal/server/infra/config"
 )
 
-func (c *BaseController) register(w http.ResponseWriter, r *http.Request) {
+func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
 	userReq := validateUserAuthReq(w, r)
 	if userReq == nil {
 		return

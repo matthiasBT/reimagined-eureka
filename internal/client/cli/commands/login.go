@@ -18,23 +18,23 @@ func (c *LoginCommand) GetName() string {
 }
 
 func (c *LoginCommand) GetDescription() string {
-	return "sign in locally or on server (in case of the first local user login)"
+	return "log in locally or on server (in case of the first local user login)"
 }
 
 func (c *LoginCommand) Validate(args ...string) error {
 	if len(args) != 2 {
 		return fmt.Errorf("example: login <login> <password>")
-	}
+	} // TODO: ******?
 	c.login, c.password = args[0], args[1]
 	return nil
 }
 
 func (c *LoginCommand) Execute() cliEntities.CommandResult {
 	// TODO: try to query the database
-	_, err := c.Proxy.SignIn(c.login, c.password)
+	_, err := c.Proxy.LogIn(c.login, c.password)
 	if err != nil {
-		msg := fmt.Sprintf("Failed to sign in: %v", err)
+		msg := fmt.Sprintf("Failed to log in: %v", err)
 		return cliEntities.CommandResult{FailureMessage: msg}
 	}
-	return cliEntities.CommandResult{SuccessMessage: "Login successful"}
+	return cliEntities.CommandResult{SuccessMessage: "Logged in successfully"}
 }
