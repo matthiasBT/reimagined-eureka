@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	entities2 "reimagined_eureka/internal/client/cli/entities"
+	cliEntities "reimagined_eureka/internal/client/cli/entities"
 )
 
 const ResultUnknownCommand = "Unknown command"
 
 type GeneralState struct {
-	Commands []entities2.Command
+	Commands []cliEntities.Command
 }
 
 func (s GeneralState) GetPrompt() string {
@@ -22,19 +22,19 @@ func (s GeneralState) GetPrompt() string {
 	return strings.Join(result, "\n")
 }
 
-func (s GeneralState) Execute(line string) (entities2.State, entities2.CommandResult) {
+func (s GeneralState) Execute(line string) (cliEntities.State, cliEntities.CommandResult) {
 	parts := strings.Fields(line)
 	for _, cmd := range s.Commands {
 		if parts[0] == cmd.GetName() {
 			if err := cmd.Validate(parts[1:]...); err != nil {
-				return nil, entities2.CommandResult{FailureMessage: err.Error()}
+				return nil, cliEntities.CommandResult{FailureMessage: err.Error()}
 			}
 			result := cmd.Execute()
 			if result.Quit {
 				return &QuitState{}, result
 			}
-			return nil, result // no new state as a result of command
+			return nil, result // TODO: currently used only for switching to QuitState. Fix maybe?
 		}
 	}
-	return nil, entities2.CommandResult{FailureMessage: ResultUnknownCommand}
+	return nil, cliEntities.CommandResult{FailureMessage: ResultUnknownCommand}
 }

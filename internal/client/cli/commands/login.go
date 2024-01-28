@@ -51,7 +51,11 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 			msg := fmt.Errorf("password verification failed: %v", err)
 			return cliEntities.CommandResult{FailureMessage: msg.Error()}
 		}
-		return cliEntities.CommandResult{SuccessMessage: "Logged in successfully (locally)"}
+		return cliEntities.CommandResult{
+			SuccessMessage: "Logged in successfully (locally)",
+			// SessionCookie: nil  // TODO
+			LoggedIn: true,
+		}
 	}
 	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
 	userData, err := c.Proxy.LogIn(c.login, c.password)
@@ -71,6 +75,7 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 	return cliEntities.CommandResult{
 		SuccessMessage: "Logged in successfully (on server)",
 		SessionCookie:  userData.SessionCookie,
+		LoggedIn:       true,
 	}
 }
 
