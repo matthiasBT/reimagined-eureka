@@ -7,6 +7,8 @@ type Credentials struct {
 }
 
 type EncryptionResult struct {
-	Plaintext               string
+	Plaintext               string // TODO: remove this!
 	Ciphertext, Salt, Nonce []byte
 }
+
+// TODO: add a separate entity for entropy
