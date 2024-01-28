@@ -33,8 +33,8 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 	// TODO: try to query the database
 	_, err := c.Proxy.LogIn(c.login, c.password)
 	if err != nil {
-		msg := fmt.Sprintf("Failed to sign up: %v", err)
-		return cliEntities.CommandResult{FailureMessage: msg}
+		msg := fmt.Errorf("failed to sign up: %v", err)
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	return cliEntities.CommandResult{SuccessMessage: "Registration successful"}
 }

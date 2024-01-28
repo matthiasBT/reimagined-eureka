@@ -10,7 +10,6 @@ import (
 func main() {
 	logger := logging.SetupLogger()
 
-	// config init
 	conf, err := config.InitConfig()
 	if err != nil {
 		logger.Failureln("Failed to start client: %v", err)
@@ -18,7 +17,6 @@ func main() {
 	}
 	logger.Successln("Client config loaded")
 
-	// storage init
 	storage, err := adapters.NewSQLiteStorage(logger, conf.DatabasePath)
 	if err != nil {
 		logger.Failureln("Failed to start client: %v", err)
@@ -27,9 +25,8 @@ func main() {
 	logger.Successln("Database initialized")
 	defer storage.Shutdown()
 
-	// proxy init
 	serverProxy := adapters.NewServerProxy(conf.ServerURL)
+	cryptoProvider := adapters.NewCryptoProvider()
 
-	// launch
-	cli.NewTerminal(logger, storage, serverProxy).Run()
+	cli.NewTerminal(logger, storage, serverProxy, cryptoProvider).Run()
 }

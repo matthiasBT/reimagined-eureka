@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 
+	"reimagined_eureka/internal/client/adapters"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	cliStates "reimagined_eureka/internal/client/cli/states"
 	clientEntities "reimagined_eureka/internal/client/entities"
@@ -21,12 +22,17 @@ type Terminal struct {
 	scanner   *bufio.Scanner
 }
 
-func NewTerminal(logger logging.ILogger, storage clientEntities.IStorage, proxy clientEntities.IProxy) *Terminal {
+func NewTerminal(
+	logger logging.ILogger,
+	storage clientEntities.IStorage,
+	proxy clientEntities.IProxy,
+	cryptoProvider *adapters.CryptoProvider,
+) *Terminal {
 	return &Terminal{
 		logger:    logger,
 		storage:   storage,
 		proxy:     proxy,
-		currState: cliStates.NewInitialState(storage, proxy),
+		currState: cliStates.NewInitialState(logger, storage, proxy, cryptoProvider),
 		scanner:   bufio.NewScanner(os.Stdin), // TODO: pass as parameter
 	}
 }

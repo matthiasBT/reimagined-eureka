@@ -18,14 +18,6 @@ const urlPrefix = "/api"
 const pathSignIn = "/user/login"
 const pathSignUp = "/user/register"
 
-//TODO: use?
-//var serverErrorResponses = map[int]error{
-//	http.StatusBadRequest:          fmt.Errorf("invalid client request"),
-//	http.StatusBadGateway:          fmt.Errorf("server network error"),
-//	http.StatusServiceUnavailable:  fmt.Errorf("server is unavailable"),
-//	http.StatusInternalServerError: fmt.Errorf("server failed to process request"),
-//}
-
 type ServerProxy struct {
 	serverURL *url.URL
 }
@@ -67,6 +59,9 @@ func (p *ServerProxy) signInOrUp(login, password, path string) (*clientEntities.
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := (&http.Client{}).Do(req)
+	if resp == nil {
+		return nil, fmt.Errorf("no response from the server")
+	}
 	if err != nil || resp.StatusCode != http.StatusOK {
 		body, bodyErr := io.ReadAll(resp.Body)
 		defer resp.Body.Close()

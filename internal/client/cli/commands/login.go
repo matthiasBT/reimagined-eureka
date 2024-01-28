@@ -5,11 +5,14 @@ import (
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
+	"reimagined_eureka/internal/client/infra/logging"
 )
 
 type LoginCommand struct {
+	Logger          logging.ILogger
 	Storage         clientEntities.IStorage
 	Proxy           clientEntities.IProxy
+	CryptoProvider  clientEntities.ICryptoProvider
 	login, password string
 }
 
@@ -18,7 +21,7 @@ func (c *LoginCommand) GetName() string {
 }
 
 func (c *LoginCommand) GetDescription() string {
-	return "log in locally or on server (in case of the first local user login)"
+	return "log in locally or on server (in case of the first local user's log in operation)"
 }
 
 func (c *LoginCommand) Validate(args ...string) error {
@@ -30,11 +33,35 @@ func (c *LoginCommand) Validate(args ...string) error {
 }
 
 func (c *LoginCommand) Execute() cliEntities.CommandResult {
-	// TODO: try to query the database
-	_, err := c.Proxy.LogIn(c.login, c.password)
+	user, err := c.Storage.ReadUser(c.login)
 	if err != nil {
-		msg := fmt.Sprintf("Failed to log in: %v", err)
-		return cliEntities.CommandResult{FailureMessage: msg}
+		return cliEntities.CommandResult{FailureMessage: err.Error()}
 	}
-	return cliEntities.CommandResult{SuccessMessage: "Logged in successfully"}
+	if user != nil {
+		pwdValid, err := c.CryptoProvider.VerifyPassword(user, c.password)
+		if err != nil {
+			msg := fmt.Errorf("failed to verify user password: %v", err)
+			return cliEntities.CommandResult{FailureMessage: msg.Error()}
+		}
+		if !pwdValid {
+			return cliEntities.CommandResult{FailureMessage: "invalid password"}
+		}
+		return cliEntities.CommandResult{SuccessMessage: "Logged in successfully (locally)"}
+	}
+	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
+	_, err = c.Proxy.LogIn(c.login, c.password) // TODO: userData: cookie
+	if err != nil {
+		msg := fmt.Errorf("failed to log in: %v", err)
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
+	}
+	newUser := &clientEntities.User{Login: c.login}
+	if err := c.CryptoProvider.PrepareUserForSave(newUser); err != nil {
+		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
+	}
+	if err := c.Storage.SaveUser(newUser); err != nil {
+		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
+	}
+	return cliEntities.CommandResult{SuccessMessage: "Logged in successfully (on server)"}
 }

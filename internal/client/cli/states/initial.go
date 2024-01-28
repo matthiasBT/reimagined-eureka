@@ -4,15 +4,22 @@ import (
 	cliCommands "reimagined_eureka/internal/client/cli/commands"
 	"reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
+	"reimagined_eureka/internal/client/infra/logging"
 )
 
 type InitialState struct {
 	GeneralState
+	logger  logging.ILogger
 	storage clientEntities.IStorage
 	proxy   clientEntities.IProxy
 }
 
-func NewInitialState(storage clientEntities.IStorage, proxy clientEntities.IProxy) *InitialState {
+func NewInitialState(
+	logger logging.ILogger,
+	storage clientEntities.IStorage,
+	proxy clientEntities.IProxy,
+	cryptoProvider clientEntities.ICryptoProvider,
+) *InitialState {
 	//commands:
 	//sign in
 	// check login and password locally
@@ -25,8 +32,9 @@ func NewInitialState(storage clientEntities.IStorage, proxy clientEntities.IProx
 	//  move to SetMasterKeyState
 	//quit
 	cmds := []entities.Command{
-		&cliCommands.LoginCommand{Storage: storage, Proxy: proxy},
+		&cliCommands.LoginCommand{Logger: logger, Storage: storage, Proxy: proxy, CryptoProvider: cryptoProvider},
+		// &cliCommands.RegisterCommand{Logger: logger, Storage: storage, Proxy: proxy, CryptoProvider: cryptoProvider},
 		&cliCommands.QuitCommand{},
 	}
-	return &InitialState{GeneralState{Commands: cmds}, storage, proxy}
+	return &InitialState{GeneralState: GeneralState{Commands: cmds}, logger: logger, storage: storage, proxy: proxy}
 }
