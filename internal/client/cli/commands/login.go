@@ -55,7 +55,8 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		return cliEntities.CommandResult{
 			SuccessMessage: "Logged in successfully (locally)",
 			// SessionCookie: nil  // TODO
-			Login: c.login,
+			Login:  c.login,
+			UserID: user.ID,
 		}
 	}
 	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
@@ -69,7 +70,8 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	if err := c.Storage.SaveUser(newUser, userData.Entropy); err != nil {
+	userID, err := c.Storage.SaveUser(newUser, userData.Entropy)
+	if err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
@@ -77,5 +79,6 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		SuccessMessage: "Logged in successfully (on server)",
 		SessionCookie:  userData.SessionCookie,
 		Login:          c.login,
+		UserID:         userID,
 	}
 }

@@ -50,13 +50,13 @@ func (c *RegisterCommand) Validate(args ...string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read user password: %v", err)
 	}
-	masterKey, err := readSecretValueMasked(c.Logger, "master key", MinMasterKeyLength, MaxMasterKeyLength)
+	masterKey, err := readSecretValueMasked(c.Logger, "master key", minMasterKeyLength, maxMasterKeyLength)
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}
 	c.Logger.Warningln("Now, it's time to create some random text that'll be used for master key verification")
 	c.Logger.Warningln("You don't need to remember or store this text. Think of it as of entropy")
-	entropy, err := readSecretValueMasked(c.Logger, "entropy", MinEntropyLength, MaxEntropyLength)
+	entropy, err := readSecretValueMasked(c.Logger, "entropy", minEntropyLength, maxEntropyLength)
 	if err != nil {
 		return fmt.Errorf("failed to read entropy: %v", err)
 	}
@@ -104,7 +104,8 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	if err := c.LoginCommand.Storage.SaveUser(newUser, entropy); err != nil {
+	userID, err := c.LoginCommand.Storage.SaveUser(newUser, entropy)
+	if err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
@@ -113,5 +114,6 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 		SuccessMessage: "Registered successfully",
 		SessionCookie:  userData.SessionCookie, // TODO: use it
 		Login:          c.login,
+		UserID:         userID,
 	}
 }

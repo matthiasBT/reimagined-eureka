@@ -13,6 +13,7 @@ type MasterKeyState struct {
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
 	login          string
+	userID         int
 }
 
 func NewMasterKeyState(
@@ -20,6 +21,7 @@ func NewMasterKeyState(
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	login string,
+	userID int,
 ) *MasterKeyState {
 	cmds := []cliEntities.Command{
 		cliCommands.NewMasterKeyCommand(logger, storage, cryptoProvider, login),
@@ -31,13 +33,14 @@ func NewMasterKeyState(
 		storage:        storage,
 		cryptoProvider: cryptoProvider,
 		login:          login,
+		userID:         userID,
 	}
 }
 
 func (s *MasterKeyState) Execute(line string) (cliEntities.State, cliEntities.CommandResult) {
 	state, result := s.GeneralState.Execute(line)
 	if result.MasterKey != "" {
-		state = NewPrimaryState(s.logger, s.storage, s.cryptoProvider, result.Login, result.MasterKey)
+		state = NewPrimaryState(s.logger, s.storage, s.cryptoProvider, s.userID, result.MasterKey)
 	}
 	return state, result
 }

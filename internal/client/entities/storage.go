@@ -1,14 +1,17 @@
 package entities
 
-import "reimagined_eureka/internal/common"
+import (
+	"reimagined_eureka/internal/common"
+)
 
 type IStorage interface {
 	Init() error
 	Shutdown()
 	Tx() (ITx, error)
 	ReadUser(login string) (*User, error) // TODO: split into separate repos?
-	SaveUser(user *User, entropy *common.Entropy) error
-	ReadCredentials(login, what string) ([]*Credential, error)
+	SaveUser(user *User, entropy *common.Entropy) (int, error)
+	ReadCredentials(userID int) ([]*Credential, error)
+	ReadNotes(userID int) ([]*Note, error)
 }
 
 type ITx interface {
@@ -29,9 +32,19 @@ type User struct {
 
 type Credential struct {
 	ID                int    `db:"id"`
+	UserID            int    `db:"user_id"`
 	Purpose           string `db:"purpose"`
 	Login             string `db:"login"`
 	EncryptedPassword []byte `db:"encrypted_password"`
 	Nonce             []byte `db:"nonce"`
 	Salt              []byte `db:"salt"`
+}
+
+type Note struct {
+	ID               int    `db:"id"`
+	UserID           int    `db:"user_id"`
+	Purpose          string `db:"purpose"`
+	EncryptedContent []byte `db:"encrypted_content"`
+	Nonce            []byte `db:"nonce"`
+	Salt             []byte `db:"salt"`
 }

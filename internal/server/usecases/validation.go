@@ -28,7 +28,7 @@ func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired
 	}
 	if len(creds.Login) < common.MinLoginLength || len(creds.Password) < common.MinPasswordLength {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Login or password is too short"))
+		w.Write([]byte("userID or password is too short"))
 		return nil
 	}
 	if entropyRequired && (creds.Entropy == nil ||

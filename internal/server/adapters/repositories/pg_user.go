@@ -41,7 +41,7 @@ func (r *PGUserRepo) CreateUser(
 	); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			r.logger.Infof("Login is already taken")
+			r.logger.Infof("login is already taken")
 			return nil, entities.ErrLoginAlreadyTaken
 		}
 		r.logger.Errorf("Failed to create a user record: %s", err.Error())

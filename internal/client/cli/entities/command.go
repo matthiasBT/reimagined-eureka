@@ -6,6 +6,7 @@ type CommandResult struct {
 	Quit           bool
 	SessionCookie  string // TODO: load from db too. TODO: figure out how to refresh it (store login and password?.. what if the password changes?)
 	Login          string
+	UserID         int
 	MasterKey      string
 }
 

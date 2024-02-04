@@ -12,7 +12,7 @@ type PrimaryState struct {
 	logger         logging.ILogger
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
-	login          string
+	userID         int
 	masterKey      string
 }
 
@@ -20,11 +20,11 @@ func NewPrimaryState(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
-	login string,
+	userID int,
 	masterKey string,
 ) *PrimaryState {
 	cmds := []entities.Command{
-		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, login),
+		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
 		&cliCommands.QuitCommand{},
 	}
 	return &PrimaryState{
@@ -32,7 +32,7 @@ func NewPrimaryState(
 		logger:         logger,
 		storage:        storage,
 		cryptoProvider: cryptoProvider,
-		login:          login,
+		userID:         userID,
 		masterKey:      masterKey,
 	}
 }

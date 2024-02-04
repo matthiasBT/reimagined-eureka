@@ -85,12 +85,12 @@ func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {
 	return &user, nil
 }
 
-func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entropy) error {
+func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entropy) (int, error) {
 	query := `
 		insert into users(login, pwd_hash, entropy_hash, entropy_encrypted, entropy_salt, entropy_nonce)
 		values ($1, $2, $3, $4, $5, $6)
 	`
-	_, err := s.db.Exec(
+	result, err := s.db.Exec(
 		query,
 		user.Login,
 		user.PasswordHash,
@@ -99,14 +99,27 @@ func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entr
 		entropy.Salt,
 		entropy.Nonce,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	id, _ := result.LastInsertId()
+	return int(id), nil // TODO: think about proper type conversion and type choices
 }
 
-func (s *SQLiteStorage) ReadCredentials(login, what string) ([]*clientEntities.Credential, error) {
+func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.Credential, error) {
 	var creds []*clientEntities.Credential
-	query := "select * from credentials where login = $1" // TODO: use the actual "what"
-	if err := s.db.Select(&creds, query, login); err != nil {
+	query := "select * from credentials where user_id = $1"
+	if err := s.db.Select(&creds, query, userID); err != nil {
 		return nil, err
 	}
 	return creds, nil
+}
+
+func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.Note, error) {
+	var notes []*clientEntities.Note
+	query := "select * from notes where user_id = $1"
+	if err := s.db.Select(&notes, query, userID); err != nil {
+		return nil, err
+	}
+	return notes, nil
 }

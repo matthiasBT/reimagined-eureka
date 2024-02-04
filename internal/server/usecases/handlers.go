@@ -33,7 +33,7 @@ func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrLoginAlreadyTaken) {
 			w.WriteHeader(http.StatusConflict)
-			w.Write([]byte("Login is already taken"))
+			w.Write([]byte("login is already taken"))
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Failed to create a new user"))
