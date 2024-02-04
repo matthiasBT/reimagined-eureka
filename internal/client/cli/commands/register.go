@@ -75,13 +75,14 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 	}
 	defer tx.Commit() // TODO: does it make sense to try to handle commit and rollback errors?
 	c.CryptoProvider.SetMasterKey(c.masterKey)
-	entropyEncrypted, err := c.CryptoProvider.Encrypt(c.entropy)
+	entropyBinary := []byte(c.entropy)
+	entropyEncrypted, err := c.CryptoProvider.Encrypt(entropyBinary)
 	if err != nil {
 		msg := fmt.Errorf("failed to sign up: %v", err)
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	entropyHash, err := c.CryptoProvider.HashSecurely(c.entropy)
+	entropyHash, err := c.CryptoProvider.Hash(entropyBinary)
 	if err != nil {
 		msg := fmt.Errorf("failed to sign up: %v", err)
 		defer tx.Rollback()
@@ -110,6 +111,7 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 	}
 	return cliEntities.CommandResult{
 		SuccessMessage: "Registered successfully",
-		SessionCookie:  userData.SessionCookie,
+		SessionCookie:  userData.SessionCookie, // TODO: use it
+		Login:          c.login,
 	}
 }

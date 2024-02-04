@@ -16,6 +16,12 @@ type ITx interface {
 }
 
 type User struct {
+	ID           int    `db:"id"`
 	Login        string `db:"login"`
 	PasswordHash []byte `db:"pwd_hash"`
+	// TODO: split into a separate entity
+	EntropyHash      []byte `db:"entropy_hash"`
+	EntropyEncrypted []byte `db:"entropy_encrypted"`
+	EntropySalt      []byte `db:"entropy_salt"`
+	EntropyNonce     []byte `db:"entropy_nonce"`
 }

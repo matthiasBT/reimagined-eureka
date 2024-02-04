@@ -55,11 +55,11 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		return cliEntities.CommandResult{
 			SuccessMessage: "Logged in successfully (locally)",
 			// SessionCookie: nil  // TODO
-			LoggedIn: true,
+			Login: c.login,
 		}
 	}
 	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
-	userData, err := c.Proxy.LogIn(c.login, c.password) // TODO: received and store entropy
+	userData, err := c.Proxy.LogIn(c.login, c.password)
 	if err != nil {
 		msg := fmt.Errorf("failed to log in: %v", err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
@@ -76,6 +76,6 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 	return cliEntities.CommandResult{
 		SuccessMessage: "Logged in successfully (on server)",
 		SessionCookie:  userData.SessionCookie,
-		LoggedIn:       true,
+		Login:          c.login,
 	}
 }

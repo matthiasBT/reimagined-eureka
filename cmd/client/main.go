@@ -28,5 +28,6 @@ func main() {
 	serverProxy := adapters.NewServerProxy(conf.ServerURL)
 	cryptoProvider := adapters.NewCryptoProvider()
 
+	// TODO: recover from panic to prevent ugly output
 	cli.NewTerminal(logger, storage, serverProxy, cryptoProvider).Run()
 }

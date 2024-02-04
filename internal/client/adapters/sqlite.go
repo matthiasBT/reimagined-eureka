@@ -75,7 +75,7 @@ func (s *SQLiteStorage) Tx() (clientEntities.ITx, error) {
 
 func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {
 	var user = clientEntities.User{}
-	query := "select login, pwd_hash from users where login = $1"
+	query := "select * from users where login = $1"
 	if err := s.db.Get(&user, query, login); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -99,8 +99,5 @@ func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entr
 		entropy.Salt,
 		entropy.Nonce,
 	)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

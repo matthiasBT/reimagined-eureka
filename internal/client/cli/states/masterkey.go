@@ -12,14 +12,17 @@ type MasterKeyState struct {
 	logger         logging.ILogger
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
+	login          string
 }
 
 func NewMasterKeyState(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
+	login string,
 ) *MasterKeyState {
 	cmds := []entities.Command{
+		cliCommands.NewMasterKeyCommand(logger, storage, cryptoProvider, login),
 		&cliCommands.QuitCommand{},
 	}
 	return &MasterKeyState{
@@ -27,5 +30,6 @@ func NewMasterKeyState(
 		logger:         logger,
 		storage:        storage,
 		cryptoProvider: cryptoProvider,
+		login:          login,
 	}
 }

@@ -3,9 +3,11 @@ package entities
 import "reimagined_eureka/internal/common"
 
 type ICryptoProvider interface {
-	VerifyPassword(user *User, password string) error
 	HashPassword(user *User, password string) error
-	HashSecurely(secret string) ([]byte, error)
+	VerifyPassword(user *User, password string) error
+	Hash(data []byte) ([]byte, error)
+	VerifyHash(data, target []byte) error
 	SetMasterKey(masterKey string)
-	Encrypt(what string) (*common.EncryptionResult, error)
+	Encrypt(what []byte) (*common.EncryptionResult, error)
+	Decrypt(what, salt, nonce []byte) ([]byte, error)
 }
