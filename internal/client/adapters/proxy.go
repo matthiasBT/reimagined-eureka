@@ -31,14 +31,14 @@ func (p *ServerProxy) LogIn(login string, password string) (*clientEntities.User
 }
 
 func (p *ServerProxy) Register(
-	login string, password string, entropy *common.EncryptionResult,
+	login string, password string, entropy *common.Entropy,
 ) (*clientEntities.UserDataResponse, error) {
 	return p.signInOrUp(login, password, pathSignUp, entropy)
 }
 
 func (p *ServerProxy) signInOrUp(
 	login, password, path string,
-	entropy *common.EncryptionResult,
+	entropy *common.Entropy,
 ) (*clientEntities.UserDataResponse, error) {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
@@ -85,7 +85,7 @@ func (p *ServerProxy) signInOrUp(
 		}
 		return nil, fmt.Errorf("request failed: %v", err)
 	}
-	var userEntropy *common.EncryptionResult
+	var userEntropy *common.Entropy
 	if entropy == nil { // for sign-up requests
 		if err := json.Unmarshal(body, &userEntropy); err != nil {
 			return nil, fmt.Errorf("failed to read server response: %v", err)

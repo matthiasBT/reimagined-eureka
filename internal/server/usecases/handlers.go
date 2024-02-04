@@ -16,7 +16,7 @@ func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
 	if userReq == nil {
 		return
 	}
-	pwdhash, err := c.crypto.HashPassword(userReq.Password)
+	pwdhash, err := c.crypto.HashSecurely(userReq.Password)
 	if err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("User doesn't exist"))
 		return
 	}
-	if err := c.crypto.CheckPassword(userReq.Password, user.PasswordHash); err != nil {
+	if err := c.crypto.CheckHash(userReq.Password, user.PasswordHash); err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("Incorrect password"))
 		return
@@ -87,11 +87,14 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Failed to create a user session"))
 		return
 	}
-	entropy := common.EncryptionResult{
-		Plaintext:  user.Entropy,
+	entropyEncrypted := common.EncryptionResult{
 		Ciphertext: user.EntropyEncrypted,
 		Salt:       user.EntropySalt,
-		Nonce:      user.EntropyNonce,
+		Nonce:      user.EntropySalt,
+	}
+	entropy := &common.Entropy{
+		EncryptionResult: &entropyEncrypted,
+		Hash:             user.EntropyHash,
 	}
 	entropyData, err := json.Marshal(entropy)
 	if err != nil {
@@ -109,12 +112,13 @@ func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func authorize(w http.ResponseWriter, session *entities.Session) {
-	http.SetCookie(w, &http.Cookie{
+	cookie := http.Cookie{
 		Name:     common.SessionCookieName,
 		Value:    session.Token,
 		Path:     "/",
 		Expires:  time.Now().Add(config.SessionTTL),
 		HttpOnly: true,  // Protect against XSS attacks
 		Secure:   false, // Should be true in production to send only over HTTPS
-	})
+	}
+	http.SetCookie(w, &cookie)
 }

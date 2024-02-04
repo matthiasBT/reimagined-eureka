@@ -85,16 +85,16 @@ func (s *SQLiteStorage) ReadUser(login string) (*clientEntities.User, error) {
 	return &user, nil
 }
 
-func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.EncryptionResult) error {
+func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entropy) error {
 	query := `
-		insert into users(login, pwd_hash, entropy, entropy_encrypted, entropy_salt, entropy_nonce)
+		insert into users(login, pwd_hash, entropy_hash, entropy_encrypted, entropy_salt, entropy_nonce)
 		values ($1, $2, $3, $4, $5, $6)
 	`
 	_, err := s.db.Exec(
 		query,
 		user.Login,
 		user.PasswordHash,
-		entropy.Plaintext,
+		entropy.Hash,
 		entropy.Ciphertext,
 		entropy.Salt,
 		entropy.Nonce,

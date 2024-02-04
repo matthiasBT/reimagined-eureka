@@ -25,7 +25,7 @@ type Storage interface {
 }
 
 type UserRepo interface {
-	CreateUser(ctx context.Context, tx Tx, login string, pwdhash []byte, entropy *common.EncryptionResult) (
+	CreateUser(ctx context.Context, tx Tx, login string, pwdhash []byte, entropy *common.Entropy) (
 		*User, error,
 	)
 	FindUser(ctx context.Context, request *common.Credentials) (*User, error)

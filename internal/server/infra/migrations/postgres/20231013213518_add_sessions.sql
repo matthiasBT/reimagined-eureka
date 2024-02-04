@@ -4,7 +4,7 @@ CREATE TABLE users (
     id                INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     login             TEXT UNIQUE NOT NULL,
     password_hash     BYTEA NOT NULL,
-    entropy           TEXT NOT NULL, -- TODO: store hash only!
+    entropy_hash      BYTEA NOT NULL,
     entropy_encrypted BYTEA NOT NULL,
     entropy_salt      BYTEA NOT NULL,
     entropy_nonce     BYTEA NOT NULL

@@ -1,6 +1,6 @@
 package entities
 
 type ICryptoProvider interface {
-	HashPassword(password string) ([]byte, error)
-	CheckPassword(password string, hash []byte) error
+	HashSecurely(secret string) ([]byte, error)
+	CheckHash(secret string, hash []byte) error
 }

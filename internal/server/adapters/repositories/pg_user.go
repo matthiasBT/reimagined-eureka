@@ -28,16 +28,16 @@ func NewPGUserRepo(logger logging.ILogger, storage entities.Storage) *PGUserRepo
 }
 
 func (r *PGUserRepo) CreateUser(
-	ctx context.Context, tx entities.Tx, login string, pwdhash []byte, entropy *common.EncryptionResult,
+	ctx context.Context, tx entities.Tx, login string, pwdhash []byte, entropy *common.Entropy,
 ) (*entities.User, error) {
 	r.logger.Infof("Creating a new user: %s", login)
 	var user = entities.User{}
 	query := `
-		insert into users(login, password_hash, entropy, entropy_encrypted, entropy_salt, entropy_nonce)
+		insert into users(login, password_hash, entropy_hash, entropy_encrypted, entropy_salt, entropy_nonce)
 		values ($1, $2, $3, $4, $5, $6) returning *
 	`
 	if err := tx.GetContext(
-		ctx, &user, query, login, pwdhash, entropy.Plaintext, entropy.Ciphertext, entropy.Salt, entropy.Nonce,
+		ctx, &user, query, login, pwdhash, entropy.Hash, entropy.Ciphertext, entropy.Salt, entropy.Nonce,
 	); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {

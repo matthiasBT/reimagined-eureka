@@ -7,7 +7,7 @@ type IStorage interface {
 	Shutdown()
 	Tx() (ITx, error)
 	ReadUser(login string) (*User, error)
-	SaveUser(user *User, entropy *common.EncryptionResult) error
+	SaveUser(user *User, entropy *common.Entropy) error
 }
 
 type ITx interface {

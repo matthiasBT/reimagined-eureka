@@ -32,7 +32,7 @@ func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired
 		return nil
 	}
 	if entropyRequired && (creds.Entropy == nil ||
-		creds.Entropy.Plaintext == "" ||
+		creds.Entropy.Hash == nil ||
 		creds.Entropy.Ciphertext == nil ||
 		creds.Entropy.Salt == nil ||
 		creds.Entropy.Nonce == nil) {

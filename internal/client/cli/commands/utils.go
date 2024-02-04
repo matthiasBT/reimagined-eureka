@@ -11,8 +11,8 @@ import (
 )
 
 func readSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize int) (string, error) {
-	lengthHint := getLengthHint(minSize, maxSize)
-	logger.Info("Enter %s (%s): ", what, lengthHint)
+	// lengthHint := getLengthHint(minSize, maxSize)  // TODO: fix "Enter [what >=N characters] (%!s(MISSING))"
+	logger.Info("Enter %s: ", what)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		return "", fmt.Errorf("failed to read %s: %v", what, err)

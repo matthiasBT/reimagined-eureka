@@ -42,6 +42,14 @@ func (c *CryptoProvider) HashPassword(user *clientEntities.User, password string
 	return nil
 }
 
+func (c *CryptoProvider) HashSecurely(secret string) ([]byte, error) {
+	hash, err := c.hashPassword(secret)
+	if err != nil {
+		return nil, err
+	}
+	return hash, nil
+}
+
 func (c *CryptoProvider) SetMasterKey(masterKey string) {
 	c.masterKey = masterKey
 }

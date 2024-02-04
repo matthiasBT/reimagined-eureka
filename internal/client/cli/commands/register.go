@@ -81,9 +81,17 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	entropyEncrypted.Plaintext = c.entropy
-
-	userData, err := c.LoginCommand.Proxy.Register(c.LoginCommand.login, c.LoginCommand.password, entropyEncrypted)
+	entropyHash, err := c.CryptoProvider.HashSecurely(c.entropy)
+	if err != nil {
+		msg := fmt.Errorf("failed to sign up: %v", err)
+		defer tx.Rollback()
+		return cliEntities.CommandResult{FailureMessage: msg.Error()}
+	}
+	entropy := &common.Entropy{
+		EncryptionResult: entropyEncrypted,
+		Hash:             entropyHash,
+	}
+	userData, err := c.LoginCommand.Proxy.Register(c.LoginCommand.login, c.LoginCommand.password, entropy)
 	if err != nil {
 		msg := fmt.Errorf("failed to sign up: %v", err)
 		defer tx.Rollback()
@@ -95,7 +103,7 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	if err := c.LoginCommand.Storage.SaveUser(newUser, entropyEncrypted); err != nil {
+	if err := c.LoginCommand.Storage.SaveUser(newUser, entropy); err != nil {
 		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
