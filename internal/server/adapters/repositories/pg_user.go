@@ -66,7 +66,7 @@ func (r *PGUserRepo) CreateSession(
 	return &session, nil
 }
 
-func (r *PGUserRepo) FindUser(ctx context.Context, request *common.Credentials) (*entities.User, error) {
+func (r *PGUserRepo) FindUser(ctx context.Context, request *common.UserCredentials) (*entities.User, error) {
 	r.logger.Infof("Searching for a user: %s", request.Login)
 	var user = entities.User{}
 	query := "select * from users where login = $1"

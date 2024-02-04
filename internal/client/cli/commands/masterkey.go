@@ -42,7 +42,7 @@ func (c *MasterKeyCommand) Validate(args ...string) error {
 	if len(args) != 0 {
 		return fmt.Errorf("example: master-key")
 	}
-	key, err := readSecretValueMasked(c.Logger, "master key", 0, 0)
+	key, err := readSecretValueMasked(c.Logger, "master key", 0, 0) // TODO: fix 0s
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}
@@ -73,39 +73,6 @@ func (c *MasterKeyCommand) Execute() cliEntities.CommandResult {
 	return cliEntities.CommandResult{
 		SuccessMessage: "Master-key verified",
 		// SessionCookie: nil  // TODO: pass along?
-		MasterKeyVerified: true,
+		MasterKey: c.masterKey,
 	}
-
-	//if user != nil {
-	//	err := c.CryptoProvider.VerifyPassword(user, c.password)
-	//	if err != nil {
-	//		msg := fmt.Errorf("password verification failed: %v", err)
-	//		return cliEntities.CommandResult{FailureMessage: msg.Error()}
-	//	}
-	//	return cliEntities.CommandResult{
-	//		SuccessMessage: "Logged in successfully (locally)",
-	//		// SessionCookie: nil  // TODO
-	//		Login: true,
-	//	}
-	//}
-	//c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
-	//userData, err := c.Proxy.LogIn(c.login, c.password)
-	//if err != nil {
-	//	msg := fmt.Errorf("failed to log in: %v", err)
-	//	return cliEntities.CommandResult{FailureMessage: msg.Error()}
-	//}
-	//newUser := &clientEntities.User{Login: c.login}
-	//if err := c.CryptoProvider.HashPassword(newUser, c.password); err != nil {
-	//	msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
-	//	return cliEntities.CommandResult{FailureMessage: msg.Error()}
-	//}
-	//if err := c.Storage.SaveUser(newUser); err != nil {
-	//	msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
-	//	return cliEntities.CommandResult{FailureMessage: msg.Error()}
-	//}
-	//return cliEntities.CommandResult{
-	//	SuccessMessage: "Logged in successfully (on server)",
-	//	SessionCookie:  userData.SessionCookie,
-	//	Login:       true,
-	//}
 }

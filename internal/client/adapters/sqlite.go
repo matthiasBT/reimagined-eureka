@@ -101,3 +101,12 @@ func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entr
 	)
 	return err
 }
+
+func (s *SQLiteStorage) ReadCredentials(login, what string) ([]*clientEntities.Credential, error) {
+	var creds []*clientEntities.Credential
+	query := "select * from credentials where login = $1" // TODO: use the actual "what"
+	if err := s.db.Select(&creds, query, login); err != nil {
+		return nil, err
+	}
+	return creds, nil
+}

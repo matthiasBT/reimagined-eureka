@@ -1,6 +1,6 @@
 package common
 
-type Credentials struct {
+type UserCredentials struct {
 	Login    string   `json:"login"`
 	Password string   `json:"password"`
 	Entropy  *Entropy `json:"entropy"`

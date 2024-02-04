@@ -28,7 +28,7 @@ type UserRepo interface {
 	CreateUser(ctx context.Context, tx Tx, login string, pwdhash []byte, entropy *common.Entropy) (
 		*User, error,
 	)
-	FindUser(ctx context.Context, request *common.Credentials) (*User, error)
+	FindUser(ctx context.Context, request *common.UserCredentials) (*User, error)
 	CreateSession(ctx context.Context, tx Tx, user *User, token string) (*Session, error)
 	FindSession(ctx context.Context, token string) (*Session, error)
 }

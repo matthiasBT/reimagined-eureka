@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY,
     login TEXT NOT NULL UNIQUE,
     pwd_hash BLOB NOT NULL, -- TODO: split into a separate table
     entropy_hash BLOB NOT NULL,

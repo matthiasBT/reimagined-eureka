@@ -45,7 +45,7 @@ func (p *ServerProxy) signInOrUp(
 		Host:   p.serverURL.Host,
 		Path:   urlPrefix + path,
 	}
-	authReqBody := common.Credentials{Login: login, Password: password}
+	authReqBody := common.UserCredentials{Login: login, Password: password}
 	if entropy != nil {
 		authReqBody.Entropy = entropy
 	}

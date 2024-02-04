@@ -8,13 +8,13 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired bool) *common.Credentials {
+func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired bool) *common.UserCredentials {
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Supply data as JSON"))
 		return nil
 	}
-	var creds common.Credentials
+	var creds common.UserCredentials
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
