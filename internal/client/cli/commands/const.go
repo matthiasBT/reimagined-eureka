@@ -13,6 +13,9 @@ const secretTypeFiles = "files"
 const secretTypeCards = "cards"
 const secretTypeAll = "all"
 
+const secretDelimiterWidth = 50
+const secretDelimiterChar = "-"
+
 var supportedTypes = []string{
 	secretTypeCreds,
 	secretTypeNotes,

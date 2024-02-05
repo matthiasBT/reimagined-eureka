@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
@@ -151,5 +152,5 @@ func (c *ListSecretsCommand) printItem(id int, args ...string) {
 	for _, arg := range args {
 		c.Logger.Infoln("%s", arg)
 	}
-	c.Logger.Infoln("")
+	c.Logger.Infoln(strings.Repeat(secretDelimiterChar, secretDelimiterWidth))
 }
