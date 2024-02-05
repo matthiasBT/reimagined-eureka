@@ -43,5 +43,14 @@ func (c *RefreshSessionCommand) Validate(args ...string) error {
 }
 
 func (c *RefreshSessionCommand) Execute() cliEntities.CommandResult {
-	return cliEntities.CommandResult{SuccessMessage: "Session cookie successfully refreshed!"}
+	userData, err := c.proxy.LogIn(c.login, c.password)
+	if err != nil {
+		return cliEntities.CommandResult{
+			FailureMessage: fmt.Errorf("failed to refresh session cookie: %v", err).Error(),
+		}
+	}
+	return cliEntities.CommandResult{
+		SuccessMessage: "Session cookie successfully refreshed!",
+		SessionCookie:  userData.SessionCookie,
+	}
 }
