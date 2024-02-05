@@ -12,6 +12,8 @@ type IStorage interface {
 	SaveUser(user *User, entropy *common.Entropy) (int, error)
 	ReadCredentials(userID int) ([]*Credential, error)
 	ReadNotes(userID int) ([]*Note, error)
+	ReadFiles(userID int) ([]*File, error)
+	ReadBankCards(userID int) ([]*BankCard, error)
 }
 
 type ITx interface {
@@ -41,6 +43,24 @@ type Credential struct {
 }
 
 type Note struct {
+	ID               int    `db:"id"`
+	UserID           int    `db:"user_id"`
+	Purpose          string `db:"purpose"`
+	EncryptedContent []byte `db:"encrypted_content"`
+	Nonce            []byte `db:"nonce"`
+	Salt             []byte `db:"salt"`
+}
+
+type File struct {
+	ID               int    `db:"id"`
+	UserID           int    `db:"user_id"`
+	Purpose          string `db:"purpose"`
+	EncryptedContent []byte `db:"encrypted_content"`
+	Nonce            []byte `db:"nonce"`
+	Salt             []byte `db:"salt"`
+}
+
+type BankCard struct {
 	ID               int    `db:"id"`
 	UserID           int    `db:"user_id"`
 	Purpose          string `db:"purpose"`

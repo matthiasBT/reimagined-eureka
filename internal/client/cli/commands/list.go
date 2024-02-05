@@ -51,32 +51,19 @@ func (c *ListSecretsCommand) Validate(args ...string) error {
 }
 
 func (c *ListSecretsCommand) Execute() cliEntities.CommandResult {
-	var creds []*clientEntities.Credential
-	var notes []*clientEntities.Note
-
-	var err error
-	if c.secretType == secretTypeCreds || c.secretType == secretTypeAll {
-		if creds, err = c.Storage.ReadCredentials(c.userID); err != nil {
-			return c.failedResult(err)
-		}
+	if err := c.listCredentials(); err != nil {
+		return c.failedResult(err)
 	}
-	if c.secretType == secretTypeNotes || c.secretType == secretTypeAll {
-		if notes, err = c.Storage.ReadNotes(c.userID); err != nil {
-			return c.failedResult(err)
-		}
+	if err := c.listNotes(); err != nil {
+		return c.failedResult(err)
 	}
-	for _, cred := range creds {
-		c.Logger.Warning("%d", cred.ID)
-		c.Logger.Infoln("%s", cred.Purpose)
+	if err := c.listFiles(); err != nil {
+		return c.failedResult(err)
 	}
-	for _, note := range notes {
-		c.Logger.Warning("%d", note.ID)
-		c.Logger.Infoln("%s", note.Purpose)
+	if err := c.listBankCards(); err != nil {
+		return c.failedResult(err)
 	}
-	msg := fmt.Sprintf(
-		"Found %d rows. Show the decrypted contents of a secret using the \"reveal\" command",
-		len(creds)+len(notes),
-	)
+	msg := "Show the decrypted contents of a secret using the \"reveal\" command"
 	return cliEntities.CommandResult{SuccessMessage: msg}
 }
 
@@ -89,16 +76,80 @@ func (c *ListSecretsCommand) validateType(what string) error {
 	return fmt.Errorf("unsupported secret type, must be one of those: %s", listSupportedTypes())
 }
 
-func (c *ListSecretsCommand) readCredentials() ([]*clientEntities.Credential, error) {
-	return c.Storage.ReadCredentials(c.userID)
+func (c *ListSecretsCommand) listCredentials() error {
+	if c.secretType == secretTypeCreds || c.secretType == secretTypeAll {
+		if creds, err := c.Storage.ReadCredentials(c.userID); err != nil {
+			return err
+		} else {
+			for _, cred := range creds {
+				c.printItem(cred.ID, cred.Purpose, cred.Login)
+			}
+		}
+	}
+	return nil
 }
 
-func (c *ListSecretsCommand) readNotes() ([]*clientEntities.Credential, error) {
-	return c.Storage.ReadCredentials(c.userID)
+func (c *ListSecretsCommand) listNotes() error {
+	if c.secretType == secretTypeNotes || c.secretType == secretTypeAll {
+		if notes, err := c.Storage.ReadNotes(c.userID); err != nil {
+			return err
+		} else {
+			for _, note := range notes {
+				c.printItem(note.ID, note.Purpose)
+			}
+		}
+	}
+	return nil
+}
+
+func (c *ListSecretsCommand) listFiles() error {
+	if c.secretType == secretTypeFiles || c.secretType == secretTypeAll {
+		if files, err := c.Storage.ReadFiles(c.userID); err != nil {
+			return err
+		} else {
+			for _, file := range files {
+				c.printItem(file.ID, file.Purpose)
+			}
+		}
+	}
+	return nil
+}
+
+func (c *ListSecretsCommand) listBankCards() error {
+	if c.secretType == secretTypeCards || c.secretType == secretTypeAll {
+		if cards, err := c.Storage.ReadBankCards(c.userID); err != nil {
+			return err
+		} else {
+			for _, card := range cards {
+				c.printItem(card.ID, card.Purpose)
+			}
+		}
+	}
+	return nil
+}
+
+func (c *ListSecretsCommand) readNotes() ([]*clientEntities.Note, error) {
+	return c.Storage.ReadNotes(c.userID)
+}
+
+func (c *ListSecretsCommand) readFiles() ([]*clientEntities.File, error) {
+	return c.Storage.ReadFiles(c.userID)
+}
+
+func (c *ListSecretsCommand) readBankCards() ([]*clientEntities.BankCard, error) {
+	return c.Storage.ReadBankCards(c.userID)
 }
 
 func (c *ListSecretsCommand) failedResult(err error) cliEntities.CommandResult {
 	return cliEntities.CommandResult{
-		FailureMessage: fmt.Errorf("failed to list %s: %v", c.secretType, err).Error(),
+		FailureMessage: fmt.Errorf("failed to list %s: %v. Aborting", c.secretType, err).Error(),
 	}
+}
+
+func (c *ListSecretsCommand) printItem(id int, args ...string) {
+	c.Logger.Warningln("ID: %d", id)
+	for _, arg := range args {
+		c.Logger.Infoln("%s", arg)
+	}
+	c.Logger.Infoln("")
 }

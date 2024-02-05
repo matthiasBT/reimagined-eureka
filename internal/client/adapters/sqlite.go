@@ -123,3 +123,21 @@ func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.Note, error) {
 	}
 	return notes, nil
 }
+
+func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.File, error) {
+	var files []*clientEntities.File
+	query := "select * from files where user_id = $1"
+	if err := s.db.Select(&files, query, userID); err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
+func (s *SQLiteStorage) ReadBankCards(userID int) ([]*clientEntities.BankCard, error) {
+	var cards []*clientEntities.BankCard
+	query := "select * from bank_cards where user_id = $1"
+	if err := s.db.Select(&cards, query, userID); err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
