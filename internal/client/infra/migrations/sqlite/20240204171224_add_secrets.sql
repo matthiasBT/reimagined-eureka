@@ -33,7 +33,7 @@ CREATE TABLE files (
     salt BLOB NOT NULL,
     UNIQUE (user_id, server_id)
 );
-CREATE TABLE bank_cards (
+CREATE TABLE cards (
     id SERIAL PRIMARY KEY,
     server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -46,12 +46,12 @@ CREATE TABLE bank_cards (
 CREATE INDEX user_credentials ON credentials(user_id);
 CREATE INDEX user_notes ON notes(user_id);
 CREATE INDEX user_files ON files(user_id);
-CREATE INDEX user_bank_cards ON bank_cards(user_id);
+CREATE INDEX user_cards ON cards(user_id);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'DROP TABLE bank_cards';
+SELECT 'DROP TABLE cards';
 SELECT 'DROP TABLE files';
 SELECT 'DROP TABLE notes';
 SELECT 'DROP TABLE credentials';

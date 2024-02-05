@@ -133,6 +133,15 @@ func (s *SQLiteStorage) SaveCredentials(credentials *clientEntities.CredentialLo
 	return err
 }
 
+func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
+	var notes []*clientEntities.NoteLocal
+	query := "select * from notes where user_id = $1"
+	if err := s.db.Select(&notes, query, userID); err != nil {
+		return nil, err
+	}
+	return notes, nil
+}
+
 func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
 	query := `
 		insert into notes(server_id, user_id, meta, encrypted_content, salt, nonce)
@@ -148,6 +157,15 @@ func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
 		note.Nonce,
 	)
 	return err
+}
+
+func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.FileLocal, error) {
+	var files []*clientEntities.FileLocal
+	query := "select * from files where user_id = $1"
+	if err := s.db.Select(&files, query, userID); err != nil {
+		return nil, err
+	}
+	return files, nil
 }
 
 func (s *SQLiteStorage) SaveFile(file *clientEntities.FileLocal) error {
@@ -167,29 +185,28 @@ func (s *SQLiteStorage) SaveFile(file *clientEntities.FileLocal) error {
 	return err
 }
 
-func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
-	var notes []*clientEntities.NoteLocal
-	query := "select * from notes where user_id = $1"
-	if err := s.db.Select(&notes, query, userID); err != nil {
-		return nil, err
-	}
-	return notes, nil
-}
-
-func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.FileLocal, error) {
-	var files []*clientEntities.FileLocal
-	query := "select * from files where user_id = $1"
-	if err := s.db.Select(&files, query, userID); err != nil {
-		return nil, err
-	}
-	return files, nil
-}
-
-func (s *SQLiteStorage) ReadBankCards(userID int) ([]*clientEntities.BankCard, error) {
-	var cards []*clientEntities.BankCard
-	query := "select * from bank_cards where user_id = $1"
+func (s *SQLiteStorage) ReadCards(userID int) ([]*clientEntities.CardLocal, error) {
+	var cards []*clientEntities.CardLocal
+	query := "select * from cards where user_id = $1"
 	if err := s.db.Select(&cards, query, userID); err != nil {
 		return nil, err
 	}
 	return cards, nil
+}
+
+func (s *SQLiteStorage) SaveCards(card *clientEntities.CardLocal) error {
+	query := `
+		insert into cards(server_id, user_id, meta, encrypted_content, salt, nonce)
+		values ($1, $2, $3, $4, $5, $6)
+	`
+	_, err := s.db.Exec(
+		query,
+		card.ServerID,
+		card.UserID,
+		card.Meta,
+		card.EncryptedContent,
+		card.Salt,
+		card.Nonce,
+	)
+	return err
 }

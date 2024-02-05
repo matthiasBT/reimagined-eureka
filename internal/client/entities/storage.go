@@ -7,16 +7,23 @@ import (
 type IStorage interface {
 	Init() error
 	Shutdown()
+
 	Tx() (ITx, error)
-	ReadUser(login string) (*User, error) // TODO: split into separate repos?
+
+	ReadUser(login string) (*User, error)
 	SaveUser(user *User, entropy *common.Entropy) (int, error)
+
 	ReadCredentials(userID int) ([]*CredentialLocal, error)
 	SaveCredentials(credentials *CredentialLocal) error
+
 	ReadNotes(userID int) ([]*NoteLocal, error)
-	SaveNote(credentials *NoteLocal) error
+	SaveNote(note *NoteLocal) error
+
 	ReadFiles(userID int) ([]*FileLocal, error)
-	SaveFile(credentials *FileLocal) error
-	ReadBankCards(userID int) ([]*BankCard, error)
+	SaveFile(file *FileLocal) error
+
+	ReadCards(userID int) ([]*CardLocal, error)
+	SaveCards(card *CardLocal) error
 }
 
 type ITx interface {
@@ -56,12 +63,12 @@ type FileLocal struct {
 	ServerID int `db:"server_id"`
 }
 
-type BankCard struct {
-	ID               int    `db:"id"`
-	ServerID         int    `db:"server_id"`
-	UserID           int    `db:"user_id"`
-	Meta             string `db:"meta"`
-	EncryptedContent []byte `db:"encrypted_content"`
-	Salt             []byte `db:"salt"`
-	Nonce            []byte `db:"nonce"`
+type CardDataPlain struct {
+	Month, Year, CSC    int
+	FirstName, LastName string
+}
+
+type CardLocal struct {
+	common.Card
+	ServerID int `db:"server_id"`
 }

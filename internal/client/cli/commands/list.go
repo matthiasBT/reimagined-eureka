@@ -61,7 +61,7 @@ func (c *ListSecretsCommand) Execute() cliEntities.CommandResult {
 	if err := c.listFiles(); err != nil {
 		return c.failedResult(err)
 	}
-	if err := c.listBankCards(); err != nil {
+	if err := c.listCards(); err != nil {
 		return c.failedResult(err)
 	}
 	msg := "Show the decrypted contents of a secret using the \"reveal\" command"
@@ -116,9 +116,9 @@ func (c *ListSecretsCommand) listFiles() error {
 	return nil
 }
 
-func (c *ListSecretsCommand) listBankCards() error {
+func (c *ListSecretsCommand) listCards() error {
 	if c.secretType == secretTypeCards || c.secretType == secretTypeAll {
-		if cards, err := c.Storage.ReadBankCards(c.userID); err != nil {
+		if cards, err := c.Storage.ReadCards(c.userID); err != nil {
 			return err
 		} else {
 			for _, card := range cards {

@@ -59,27 +59,39 @@ CREATE TABLE files_versions (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (file_id, version)
 );
--- TODO: fix all the tables below this line
-CREATE TABLE bank_cards (
+CREATE TABLE cards (
     id SERIAL PRIMARY KEY,
-    server_id INTEGER,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
+    salt BYTEA NOT NULL
+);
+CREATE TABLE cards_versions (
+    id SERIAL PRIMARY KEY,
+    card_id INTEGER NOT NULL REFERENCES cards(id),
+    version INTEGER NOT NULL,
+    meta TEXT NOT NULL,
+    encrypted_content BYTEA NOT NULL,
+    nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
-    UNIQUE (user_id, meta)
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (card_id, version)
 );
 CREATE INDEX user_credentials ON credentials(user_id);
 CREATE INDEX user_notes ON notes(user_id);
 CREATE INDEX user_files ON files(user_id);
-CREATE INDEX user_bank_cards ON bank_cards(user_id);
+CREATE INDEX user_cards ON cards(user_id);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'DROP TABLE bank_cards';
+SELECT 'DROP TABLE cards_versions';
+SELECT 'DROP TABLE cards';
+SELECT 'DROP TABLE files_versions';
 SELECT 'DROP TABLE files';
+SELECT 'DROP TABLE notes_versions';
 SELECT 'DROP TABLE notes';
+SELECT 'DROP TABLE credentials_versions';
 SELECT 'DROP TABLE credentials';
 -- +goose StatementEnd

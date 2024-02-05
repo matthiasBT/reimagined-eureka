@@ -130,3 +130,32 @@ func validateFile(w http.ResponseWriter, r *http.Request) *common.FileReq {
 	}
 	return &file
 }
+
+func validateCard(w http.ResponseWriter, r *http.Request) *common.CardReq {
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Supply data as JSON"))
+		return nil
+	}
+	var card common.CardReq
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to read request body"))
+		return nil
+	}
+	if err := json.Unmarshal(body, &card); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to parse card request"))
+		return nil
+	}
+	if card.Meta == "" ||
+		card.Value == nil ||
+		card.Value.Ciphertext == nil ||
+		card.Value.Salt == nil ||
+		card.Value.Nonce == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("All mandatory fields must be supplied"))
+	}
+	return &card
+}

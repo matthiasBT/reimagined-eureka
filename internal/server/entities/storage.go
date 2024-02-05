@@ -52,3 +52,9 @@ type FilesRepo interface {
 	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.FileReq, error)
 	// ReadVersion
 }
+
+type CardsRepo interface {
+	Write(ctx context.Context, tx Tx, userID int, data *common.CardReq) (int, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.CardReq, error)
+	// ReadVersion
+}

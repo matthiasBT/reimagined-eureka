@@ -60,3 +60,18 @@ type File struct {
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
 }
+
+type CardReq struct {
+	ServerID *int
+	Meta     string
+	Value    *EncryptionResult
+}
+
+type Card struct {
+	ID               int    `db:"id"`
+	UserID           int    `db:"user_id"`
+	Meta             string `db:"meta"`
+	EncryptedContent []byte `db:"encrypted_content"`
+	Salt             []byte `db:"salt"`
+	Nonce            []byte `db:"nonce"`
+}

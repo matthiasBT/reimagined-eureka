@@ -7,8 +7,9 @@ type IProxy interface {
 	Register(login string, password string, entropy *common.Entropy) (*UserDataResponse, error)
 	SetSessionCookie(cookie string)
 	AddCredentials(creds *common.CredentialsReq) (int, error)
-	AddNote(creds *common.NoteReq) (int, error)
-	AddFile(creds *common.FileReq) (int, error)
+	AddNote(note *common.NoteReq) (int, error)
+	AddFile(file *common.FileReq) (int, error)
+	AddCard(card *common.CardReq) (int, error)
 }
 
 type UserDataResponse struct {

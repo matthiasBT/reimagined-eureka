@@ -21,6 +21,7 @@ const pathSignUp = "/user/register"
 const pathAddCredentials = "/secrets/credentials"
 const pathAddNote = "/secrets/notes"
 const pathAddFile = "/secrets/files"
+const pathAddCard = "/secrets/cards"
 
 var ErrNoSessionCookie = errors.New("no session cookie set")
 
@@ -83,6 +84,19 @@ func (p *ServerProxy) AddFile(file *common.FileReq) (int, error) {
 		Path:   urlPrefix + pathAddFile,
 	}
 	payload, err := json.Marshal(file)
+	return p.addSecret(fullURL.String(), payload, err)
+}
+
+func (p *ServerProxy) AddCard(card *common.CardReq) (int, error) {
+	if p.sessionCookie == "" {
+		return 0, ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathAddCard,
+	}
+	payload, err := json.Marshal(card)
 	return p.addSecret(fullURL.String(), payload, err)
 }
 

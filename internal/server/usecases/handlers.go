@@ -175,6 +175,28 @@ func (c *BaseController) createFile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
+func (c *BaseController) createCard(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	file := validateCard(w, r)
+	if file == nil {
+		return
+	}
+	tx, err := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	rowId, err := c.cardsRepo.Write(r.Context(), tx, *userID, file)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to write card: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	w.Write([]byte(strconv.Itoa(rowId)))
+}
+
 func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
