@@ -19,6 +19,9 @@ const urlPrefix = "/api"
 const pathSignIn = "/user/login"
 const pathSignUp = "/user/register"
 const pathAddCredentials = "/secrets/credentials"
+const pathAddNote = "/secrets/notes"
+
+var ErrNoSessionCookie = errors.New("no session cookie set")
 
 type ServerProxy struct {
 	serverURL     *url.URL
@@ -43,13 +46,53 @@ func (p *ServerProxy) Register(
 	return p.signInOrUp(login, password, pathSignUp, entropy)
 }
 
-func (p *ServerProxy) AddCredentials(creds *common.Credentials) (int, error) {
+func (p *ServerProxy) AddCredentials(creds *common.CredentialsReq) (int, error) {
+	if p.sessionCookie == "" {
+		return 0, ErrNoSessionCookie
+	}
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
 		Path:   urlPrefix + pathAddCredentials,
 	}
 	payload, err := json.Marshal(creds)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if _, err := buf.Write(payload); err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", fullURL.String(), &buf)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Add("Content-Type", "application/json")
+	p.addSessionCookie(req)
+
+	body, _, err := getResponse(req)
+	if err != nil {
+		return 0, err
+	}
+	rowID, err := strconv.Atoi(string(body))
+	if err != nil {
+		return 0, fmt.Errorf("incorrect response from server: can't interpret response as row ID")
+	}
+	return rowID, nil
+}
+
+func (p *ServerProxy) AddNote(note *common.NoteReq) (int, error) {
+	if p.sessionCookie == "" {
+		return 0, ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathAddNote,
+	}
+	payload, err := json.Marshal(note)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create request: %v", err)
 	}

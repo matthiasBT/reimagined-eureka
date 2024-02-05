@@ -12,7 +12,8 @@ type IStorage interface {
 	SaveUser(user *User, entropy *common.Entropy) (int, error)
 	ReadCredentials(userID int) ([]*CredentialLocal, error)
 	SaveCredentials(credentials *CredentialLocal) error
-	ReadNotes(userID int) ([]*Note, error)
+	ReadNotes(userID int) ([]*NoteLocal, error)
+	SaveNote(credentials *NoteLocal) error
 	ReadFiles(userID int) ([]*File, error)
 	ReadBankCards(userID int) ([]*BankCard, error)
 }
@@ -44,15 +45,12 @@ type CredentialLocal struct {
 	ServerID int `db:"server_id"`
 }
 
-type Note struct {
-	ID               int    `db:"id"`
-	ServerID         int    `db:"server_id"`
-	UserID           int    `db:"user_id"`
-	Meta             string `db:"meta"`
-	EncryptedContent []byte `db:"encrypted_content"`
-	Salt             []byte `db:"salt"`
-	Nonce            []byte `db:"nonce"`
+type NoteLocal struct {
+	common.Note
+	ServerID int `db:"server_id"`
 }
+
+// TODO: replace these:
 
 type File struct {
 	ID               int    `db:"id"`

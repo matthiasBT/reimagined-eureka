@@ -15,7 +15,7 @@ type Entropy struct {
 	Hash []byte
 }
 
-type Credentials struct {
+type CredentialsReq struct {
 	ServerID    *int
 	Login, Meta string
 	Value       *EncryptionResult
@@ -29,4 +29,19 @@ type Credential struct {
 	EncryptedPassword []byte `db:"encrypted_password"`
 	Salt              []byte `db:"salt"`
 	Nonce             []byte `db:"nonce"`
+}
+
+type NoteReq struct {
+	ServerID *int
+	Meta     string
+	Value    *EncryptionResult
+}
+
+type Note struct {
+	ID               int    `db:"id"`
+	UserID           int    `db:"user_id"`
+	Meta             string `db:"meta"`
+	EncryptedContent []byte `db:"encrypted_content"`
+	Salt             []byte `db:"salt"`
+	Nonce            []byte `db:"nonce"`
 }

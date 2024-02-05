@@ -11,6 +11,8 @@ import (
 	"reimagined_eureka/internal/client/infra/logging"
 )
 
+// TODO: check on Windows too, and maybe on Linux
+
 func readSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize int) (string, error) {
 	// lengthHint := getLengthHint(minSize, maxSize)  // TODO: fix "Enter [secretType >=N characters] (%!s(MISSING))"
 	logger.Info("Enter %s: ", what)

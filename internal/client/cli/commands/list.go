@@ -129,18 +129,6 @@ func (c *ListSecretsCommand) listBankCards() error {
 	return nil
 }
 
-func (c *ListSecretsCommand) readNotes() ([]*clientEntities.Note, error) {
-	return c.Storage.ReadNotes(c.userID)
-}
-
-func (c *ListSecretsCommand) readFiles() ([]*clientEntities.File, error) {
-	return c.Storage.ReadFiles(c.userID)
-}
-
-func (c *ListSecretsCommand) readBankCards() ([]*clientEntities.BankCard, error) {
-	return c.Storage.ReadBankCards(c.userID)
-}
-
 func (c *ListSecretsCommand) failedResult(err error) cliEntities.CommandResult {
 	return cliEntities.CommandResult{
 		FailureMessage: fmt.Errorf("failed to list %s: %v. Aborting", c.secretType, err).Error(),

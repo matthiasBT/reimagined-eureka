@@ -9,7 +9,7 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-type AddCredsCommand struct {
+type AddNoteCommand struct {
 	Logger         logging.ILogger
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
@@ -17,10 +17,9 @@ type AddCredsCommand struct {
 	sessionCookie  string
 	masterKey      string
 	userID         int
-	credsLogin     string
 }
 
-func NewAddCredsCommand(
+func NewAddNoteCommand(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
@@ -28,8 +27,8 @@ func NewAddCredsCommand(
 	sessionCookie string,
 	masterKey string,
 	userID int,
-) *AddCredsCommand {
-	return &AddCredsCommand{
+) *AddNoteCommand {
+	return &AddNoteCommand{
 		Logger:         logger,
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
@@ -40,27 +39,26 @@ func NewAddCredsCommand(
 	}
 }
 
-func (c *AddCredsCommand) GetName() string {
-	return "add-creds"
+func (c *AddNoteCommand) GetName() string {
+	return "add-note"
 }
 
-func (c *AddCredsCommand) GetDescription() string {
-	return "add a login-password pair"
+func (c *AddNoteCommand) GetDescription() string {
+	return "add a text note"
 }
 
-func (c *AddCredsCommand) Validate(args ...string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("example: add-creds <login>")
+func (c *AddNoteCommand) Validate(args ...string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("example: add-note")
 	}
-	c.credsLogin = args[0]
 	return nil
 }
 
-func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
-	password, err := readSecretValueMasked(c.Logger, "password", 1, 0)
+func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
+	content, err := readNonSecretValue(c.Logger, "note content") // don't replace with '*' because it's multiline
 	if err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read password: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to read note content: %v", err).Error(),
 		}
 	}
 	meta, err := readNonSecretValue(c.Logger, "meta information")
@@ -69,38 +67,36 @@ func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
 			FailureMessage: fmt.Errorf("failed to read meta information: %v", err).Error(),
 		}
 	}
-	encrypted, err := c.CryptoProvider.Encrypt([]byte(password))
+	encrypted, err := c.CryptoProvider.Encrypt([]byte(content))
 	if err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to encrypt password: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to encrypt note content: %v", err).Error(),
 		}
 	}
-	payload := common.CredentialsReq{
+	payload := common.NoteReq{
 		ServerID: nil,
-		Login:    c.credsLogin,
 		Meta:     meta,
 		Value:    encrypted,
 	}
-	rowID, err := c.proxy.AddCredentials(&payload)
+	rowID, err := c.proxy.AddNote(&payload)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
 	}
-	credsLocal := clientEntities.CredentialLocal{
-		Credential: common.Credential{
-			UserID:            c.userID,
-			Meta:              payload.Meta,
-			Login:             payload.Login,
-			EncryptedPassword: payload.Value.Ciphertext,
-			Salt:              payload.Value.Salt,
-			Nonce:             payload.Value.Nonce,
+	credsLocal := clientEntities.NoteLocal{
+		Note: common.Note{
+			UserID:           c.userID,
+			Meta:             payload.Meta,
+			EncryptedContent: payload.Value.Ciphertext,
+			Salt:             payload.Value.Salt,
+			Nonce:            payload.Value.Nonce,
 		},
 		ServerID: rowID,
 	}
-	if err := c.Storage.SaveCredentials(&credsLocal); err != nil {
+	if err := c.Storage.SaveNote(&credsLocal); err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to store credentials locally: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to store note locally: %v", err).Error(),
 		}
 	}
 	return cliEntities.CommandResult{

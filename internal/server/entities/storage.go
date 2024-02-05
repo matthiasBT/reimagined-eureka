@@ -36,7 +36,13 @@ type UserRepo interface {
 }
 
 type CredentialsRepo interface {
-	Write(ctx context.Context, tx Tx, userID int, data *common.Credentials) (int, error)
-	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.Credentials, error)
+	Write(ctx context.Context, tx Tx, userID int, data *common.CredentialsReq) (int, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.CredentialsReq, error)
+	// ReadVersion
+}
+
+type NotesRepo interface {
+	Write(ctx context.Context, tx Tx, userID int, data *common.NoteReq) (int, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.NoteReq, error)
 	// ReadVersion
 }

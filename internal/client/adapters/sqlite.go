@@ -133,8 +133,25 @@ func (s *SQLiteStorage) SaveCredentials(credentials *clientEntities.CredentialLo
 	return err
 }
 
-func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.Note, error) {
-	var notes []*clientEntities.Note
+func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
+	query := `
+		insert into notes(server_id, user_id, meta, encrypted_content, salt, nonce)
+		values ($1, $2, $3, $4, $5, $6)
+	`
+	_, err := s.db.Exec(
+		query,
+		note.ServerID,
+		note.UserID,
+		note.Meta,
+		note.EncryptedContent,
+		note.Salt,
+		note.Nonce,
+	)
+	return err
+}
+
+func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
+	var notes []*clientEntities.NoteLocal
 	query := "select * from notes where user_id = $1"
 	if err := s.db.Select(&notes, query, userID); err != nil {
 		return nil, err

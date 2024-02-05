@@ -20,17 +20,17 @@ func NewCredentialsRepo(logger logging.ILogger, storage entities.Storage) *Crede
 	}
 }
 
-func (r *CredentialsRepo) Write(ctx context.Context, tx entities.Tx, userID int, data *common.Credentials) (int, error) {
+func (r *CredentialsRepo) Write(ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq) (int, error) {
 	r.logger.Infof("Creating new credentials for user: %d", userID)
 	return r.create(ctx, tx, userID, data)
 }
 
-func (r *CredentialsRepo) Read(ctx context.Context, tx entities.Tx, userID int, rowId int) (*common.Credentials, error) {
+func (r *CredentialsRepo) Read(ctx context.Context, tx entities.Tx, userID int, rowId int) (*common.CredentialsReq, error) {
 	panic("implement me!")
 }
 
 func (r *CredentialsRepo) create(
-	ctx context.Context, tx entities.Tx, userID int, data *common.Credentials,
+	ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq,
 ) (int, error) {
 	var result common.Credential
 	query := `
@@ -44,7 +44,7 @@ func (r *CredentialsRepo) create(
 		r.logger.Errorf("Failed to create credentials: %s", err.Error())
 		return 0, err
 	}
-	r.logger.Infof("Credentials created")
+	r.logger.Infof("CredentialsReq created")
 	if err := r.createVersion(ctx, tx, result.ID, data); err != nil {
 		return 0, err
 	}
@@ -52,7 +52,7 @@ func (r *CredentialsRepo) create(
 }
 
 func (r *CredentialsRepo) createVersion(
-	ctx context.Context, tx entities.Tx, credID int, data *common.Credentials,
+	ctx context.Context, tx entities.Tx, credID int, data *common.CredentialsReq,
 ) error {
 	query := `
 		insert into credentials_versions(cred_id, version, meta, login, encrypted_password, salt, nonce)
@@ -72,10 +72,10 @@ func (r *CredentialsRepo) createVersion(
 		r.logger.Errorf("Failed to create credentials version: %s", err.Error())
 		return err
 	}
-	r.logger.Infof("Credentials version created")
+	r.logger.Infof("CredentialsReq version created")
 	return nil
 }
 
-func (r *CredentialsRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.Credentials) (int, error) {
+func (r *CredentialsRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq) (int, error) {
 	panic("Implement me!")
 }

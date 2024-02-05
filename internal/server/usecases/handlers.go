@@ -131,6 +131,28 @@ func (c *BaseController) createCredentials(w http.ResponseWriter, r *http.Reques
 	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
+func (c *BaseController) createNote(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	note := validateNote(w, r)
+	if note == nil {
+		return
+	}
+	tx, err := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	rowId, err := c.notesRepo.Write(r.Context(), tx, *userID, note)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to write note: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	w.Write([]byte(strconv.Itoa(rowId)))
+}
+
 func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }

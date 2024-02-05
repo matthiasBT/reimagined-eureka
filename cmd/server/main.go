@@ -53,8 +53,9 @@ func main() {
 	defer storage.Shutdown()
 	userRepo := repositories.NewPGUserRepo(logger, storage)
 	credsRepo := repositories.NewCredentialsRepo(logger, storage)
+	notesRepo := repositories.NewNotesRepo(logger, storage)
 	crypto := adapters.CryptoProvider{Logger: logger}
-	controller := usecases.NewBaseController(logger, storage, userRepo, credsRepo, &crypto)
+	controller := usecases.NewBaseController(logger, storage, userRepo, credsRepo, notesRepo, &crypto)
 	r := setupServer(logger, userRepo, controller)
 	srv := http.Server{Addr: conf.ServerAddr, Handler: r}
 

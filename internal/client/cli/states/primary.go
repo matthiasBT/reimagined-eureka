@@ -82,7 +82,8 @@ func createCommands(
 	return []entities.Command{
 		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
 		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
-		cliCommands.NewAddCredentialsCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
+		cliCommands.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
+		cliCommands.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
 		&cliCommands.QuitCommand{},
 	}
 }

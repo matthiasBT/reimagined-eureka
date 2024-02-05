@@ -20,18 +20,25 @@ CREATE TABLE credentials_versions (
     salt BYTEA NOT NULL,
     UNIQUE (cred_id, version)
 );
-
--- TODO: fix all the tables below this line
 CREATE TABLE notes (
     id SERIAL PRIMARY KEY,
-    server_id INTEGER,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
-    salt BYTEA NOT NULL,
-    UNIQUE (user_id, meta)
+    salt BYTEA NOT NULL
 );
+CREATE TABLE notes_versions (
+    id SERIAL PRIMARY KEY,
+    note_id INTEGER NOT NULL REFERENCES notes(id),
+    version INTEGER NOT NULL,
+    meta TEXT NOT NULL,
+    encrypted_content BYTEA NOT NULL,
+    nonce BYTEA NOT NULL,
+    salt BYTEA NOT NULL,
+    UNIQUE (note_id, version)
+);
+-- TODO: fix all the tables below this line
 CREATE TABLE files (
     id SERIAL PRIMARY KEY,
     server_id INTEGER,

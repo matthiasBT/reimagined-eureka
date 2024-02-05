@@ -43,13 +43,13 @@ func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired
 	return &creds
 }
 
-func validateCredentials(w http.ResponseWriter, r *http.Request) *common.Credentials {
+func validateCredentials(w http.ResponseWriter, r *http.Request) *common.CredentialsReq {
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Supply data as JSON"))
 		return nil
 	}
-	var creds common.Credentials
+	var creds common.CredentialsReq
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -62,6 +62,7 @@ func validateCredentials(w http.ResponseWriter, r *http.Request) *common.Credent
 		return nil
 	}
 	if creds.Login == "" ||
+		creds.Meta == "" ||
 		creds.Value == nil ||
 		creds.Value.Ciphertext == nil ||
 		creds.Value.Salt == nil ||
@@ -70,4 +71,33 @@ func validateCredentials(w http.ResponseWriter, r *http.Request) *common.Credent
 		w.Write([]byte("All mandatory fields must be supplied"))
 	}
 	return &creds
+}
+
+func validateNote(w http.ResponseWriter, r *http.Request) *common.NoteReq {
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Supply data as JSON"))
+		return nil
+	}
+	var note common.NoteReq
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to read request body"))
+		return nil
+	}
+	if err := json.Unmarshal(body, &note); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to parse note request"))
+		return nil
+	}
+	if note.Meta == "" ||
+		note.Value == nil ||
+		note.Value.Ciphertext == nil ||
+		note.Value.Salt == nil ||
+		note.Value.Nonce == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("All mandatory fields must be supplied"))
+	}
+	return &note
 }
