@@ -42,3 +42,32 @@ func validateUserAuthReq(w http.ResponseWriter, r *http.Request, entropyRequired
 	}
 	return &creds
 }
+
+func validateCredentials(w http.ResponseWriter, r *http.Request) *common.Credentials {
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Supply data as JSON"))
+		return nil
+	}
+	var creds common.Credentials
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to read request body"))
+		return nil
+	}
+	if err := json.Unmarshal(body, &creds); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to parse credentials create/update request"))
+		return nil
+	}
+	if creds.Login == "" ||
+		creds.Value == nil ||
+		creds.Value.Ciphertext == nil ||
+		creds.Value.Salt == nil ||
+		creds.Value.Nonce == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("All mandatory fields must be supplied"))
+	}
+	return &creds
+}

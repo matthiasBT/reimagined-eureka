@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/pkg/errors"
 
@@ -17,13 +18,19 @@ import (
 const urlPrefix = "/api"
 const pathSignIn = "/user/login"
 const pathSignUp = "/user/register"
+const pathAddCredentials = "/secrets/credentials"
 
 type ServerProxy struct {
-	serverURL *url.URL
+	serverURL     *url.URL
+	sessionCookie string
 }
 
 func NewServerProxy(serverURL *url.URL) *ServerProxy {
 	return &ServerProxy{serverURL: serverURL}
+}
+
+func (p *ServerProxy) SetSessionCookie(cookie string) {
+	p.sessionCookie = cookie
 }
 
 func (p *ServerProxy) LogIn(login string, password string) (*clientEntities.UserDataResponse, error) {
@@ -34,6 +41,40 @@ func (p *ServerProxy) Register(
 	login string, password string, entropy *common.Entropy,
 ) (*clientEntities.UserDataResponse, error) {
 	return p.signInOrUp(login, password, pathSignUp, entropy)
+}
+
+func (p *ServerProxy) AddCredentials(creds *common.Credentials) (int, error) {
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathAddCredentials,
+	}
+	payload, err := json.Marshal(creds)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if _, err := buf.Write(payload); err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", fullURL.String(), &buf)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Add("Content-Type", "application/json")
+	p.addSessionCookie(req)
+
+	body, _, err := getResponse(req)
+	if err != nil {
+		return 0, err
+	}
+	rowID, err := strconv.Atoi(string(body))
+	if err != nil {
+		return 0, fmt.Errorf("incorrect response from server: can't interpret response as row ID")
+	}
+	return rowID, nil
 }
 
 func (p *ServerProxy) signInOrUp(
@@ -61,13 +102,44 @@ func (p *ServerProxy) signInOrUp(
 
 	req, err := http.NewRequest("POST", fullURL.String(), &buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create a request: %v", err)
+		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 	req.Header.Add("Content-Type", "application/json")
 
+	body, cookies, err := getResponse(req)
+	if err != nil {
+		return nil, err
+	}
+	var userEntropy *common.Entropy
+	if entropy == nil { // for sign-up requests
+		if err := json.Unmarshal(body, &userEntropy); err != nil {
+			return nil, fmt.Errorf("failed to read server response: %v", err)
+		}
+	}
+	for _, cookie := range cookies {
+		if cookie.Name == common.SessionCookieName {
+			return &clientEntities.UserDataResponse{
+				Entropy:       userEntropy,
+				SessionCookie: cookie.Value,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("incorrect response from server: no session cookie set")
+}
+
+func (p *ServerProxy) addSessionCookie(req *http.Request) {
+	cookie := &http.Cookie{
+		Name:  common.SessionCookieName,
+		Value: p.sessionCookie,
+		Path:  "/",
+	}
+	req.AddCookie(cookie)
+}
+
+func getResponse(req *http.Request) ([]byte, []*http.Cookie, error) {
 	resp, err := (&http.Client{}).Do(req)
 	if resp == nil {
-		return nil, fmt.Errorf("no response from the server")
+		return nil, nil, fmt.Errorf("no response from the server")
 	}
 	body, bodyErr := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
@@ -83,21 +155,7 @@ func (p *ServerProxy) signInOrUp(
 		} else {
 			err = errors.Wrap(err, respErr.Error())
 		}
-		return nil, fmt.Errorf("request failed: %v", err)
+		return nil, nil, fmt.Errorf("request failed: %v", err)
 	}
-	var userEntropy *common.Entropy
-	if entropy == nil { // for sign-up requests
-		if err := json.Unmarshal(body, &userEntropy); err != nil {
-			return nil, fmt.Errorf("failed to read server response: %v", err)
-		}
-	}
-	for _, cookie := range resp.Cookies() {
-		if cookie.Name == common.SessionCookieName {
-			return &clientEntities.UserDataResponse{
-				Entropy:       userEntropy,
-				SessionCookie: cookie.Value,
-			}, nil
-		}
-	}
-	return nil, fmt.Errorf("incorrect response from server: no session cookie set")
+	return body, resp.Cookies(), nil
 }

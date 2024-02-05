@@ -14,3 +14,19 @@ type Entropy struct {
 	*EncryptionResult
 	Hash []byte
 }
+
+type Credentials struct {
+	ServerID    *int
+	Login, Meta string
+	Value       *EncryptionResult
+}
+
+type Credential struct {
+	ID                int    `db:"id"`
+	UserID            int    `db:"user_id"`
+	Meta              string `db:"meta"`
+	Login             string `db:"login"`
+	EncryptedPassword []byte `db:"encrypted_password"`
+	Salt              []byte `db:"salt"`
+	Nonce             []byte `db:"nonce"`
+}

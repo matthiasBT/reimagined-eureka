@@ -11,6 +11,8 @@ var (
 	ErrLoginAlreadyTaken = errors.New("login already taken")
 )
 
+const DefaultVersion = 1
+
 type Tx interface {
 	Commit() error
 	Rollback() error
@@ -31,4 +33,10 @@ type UserRepo interface {
 	FindUser(ctx context.Context, request *common.UserCredentials) (*User, error)
 	CreateSession(ctx context.Context, tx Tx, user *User, token string) (*Session, error)
 	FindSession(ctx context.Context, token string) (*Session, error)
+}
+
+type CredentialsRepo interface {
+	Write(ctx context.Context, tx Tx, userID int, data *common.Credentials) (int, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.Credentials, error)
+	// ReadVersion
 }

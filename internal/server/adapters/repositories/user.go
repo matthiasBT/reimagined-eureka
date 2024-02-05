@@ -15,19 +15,19 @@ import (
 	"reimagined_eureka/internal/server/infra/logging"
 )
 
-type PGUserRepo struct {
+type UserRepo struct {
 	logger  logging.ILogger
 	storage entities.Storage
 }
 
-func NewPGUserRepo(logger logging.ILogger, storage entities.Storage) *PGUserRepo {
-	return &PGUserRepo{
+func NewPGUserRepo(logger logging.ILogger, storage entities.Storage) *UserRepo {
+	return &UserRepo{
 		logger:  logger,
 		storage: storage,
 	}
 }
 
-func (r *PGUserRepo) CreateUser(
+func (r *UserRepo) CreateUser(
 	ctx context.Context, tx entities.Tx, login string, pwdhash []byte, entropy *common.Entropy,
 ) (*entities.User, error) {
 	r.logger.Infof("Creating a new user: %s", login)
@@ -51,7 +51,7 @@ func (r *PGUserRepo) CreateUser(
 	return &user, nil
 }
 
-func (r *PGUserRepo) CreateSession(
+func (r *UserRepo) CreateSession(
 	ctx context.Context, tx entities.Tx, user *entities.User, token string,
 ) (*entities.Session, error) {
 	r.logger.Infof("Creating a session for a user: %s", user.Login)
@@ -66,7 +66,7 @@ func (r *PGUserRepo) CreateSession(
 	return &session, nil
 }
 
-func (r *PGUserRepo) FindUser(ctx context.Context, request *common.UserCredentials) (*entities.User, error) {
+func (r *UserRepo) FindUser(ctx context.Context, request *common.UserCredentials) (*entities.User, error) {
 	r.logger.Infof("Searching for a user: %s", request.Login)
 	var user = entities.User{}
 	query := "select * from users where login = $1"
@@ -82,7 +82,7 @@ func (r *PGUserRepo) FindUser(ctx context.Context, request *common.UserCredentia
 	return &user, nil
 }
 
-func (r *PGUserRepo) FindSession(ctx context.Context, token string) (*entities.Session, error) {
+func (r *UserRepo) FindSession(ctx context.Context, token string) (*entities.Session, error) {
 	r.logger.Infof("Looking for a session")
 	var session = entities.Session{}
 	query := "select * from sessions where token = $1"

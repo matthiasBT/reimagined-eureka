@@ -3,7 +3,9 @@ package usecases
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"reimagined_eureka/internal/common"
@@ -103,8 +105,30 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Failed to write user entropy data"))
 		return
 	}
-	w.Write(entropyData)
 	authorize(w, session)
+	w.Write(entropyData)
+}
+
+func (c *BaseController) createCredentials(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	creds := validateCredentials(w, r)
+	if creds == nil {
+		return
+	}
+	tx, err := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	rowId, err := c.credsRepo.Write(r.Context(), tx, *userID, creds)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to write credentials: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
 func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
@@ -116,9 +140,20 @@ func authorize(w http.ResponseWriter, session *entities.Session) {
 		Name:     common.SessionCookieName,
 		Value:    session.Token,
 		Path:     "/",
-		Expires:  time.Now().Add(config.SessionTTL), // TODO: add expiration + renewal on client
-		HttpOnly: true,                              // Protect against XSS attacks
-		Secure:   false,                             // Should be true in production to send only over HTTPS
+		Expires:  time.Now().Add(config.SessionTTL),
+		HttpOnly: true,  // Protect against XSS attacks
+		Secure:   false, // Should be true in production to send only over HTTPS
 	}
 	http.SetCookie(w, &cookie)
+}
+
+func getUserID(w http.ResponseWriter, r *http.Request) *int {
+	userID := r.Context().Value(entities.ContextKey{Key: "user_id"})
+	if userID == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to find the user_id in the context"))
+		return nil
+	}
+	res := userID.(int)
+	return &res
 }

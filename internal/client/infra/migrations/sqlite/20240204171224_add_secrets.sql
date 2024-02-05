@@ -4,9 +4,9 @@
 -- TODO: table inheritance?
 CREATE TABLE credentials (
     id SERIAL PRIMARY KEY,
-    server_id BIGINT UNIQUE NOT NULL,
+    server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
-    purpose TEXT NOT NULL,
+    meta TEXT NOT NULL,
     login TEXT NOT NULL,
     encrypted_password BLOB NOT NULL,
     nonce BLOB NOT NULL,
@@ -15,9 +15,9 @@ CREATE TABLE credentials (
 );
 CREATE TABLE notes (
     id SERIAL PRIMARY KEY,
-    server_id BIGINT UNIQUE NOT NULL,
+    server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
-    purpose TEXT NOT NULL,
+    meta TEXT NOT NULL,
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
@@ -25,9 +25,9 @@ CREATE TABLE notes (
 );
 CREATE TABLE files (
     id SERIAL PRIMARY KEY,
-    server_id BIGINT UNIQUE NOT NULL,
+    server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
-    purpose TEXT NOT NULL,
+    meta TEXT NOT NULL,
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
@@ -35,9 +35,9 @@ CREATE TABLE files (
 );
 CREATE TABLE bank_cards (
     id SERIAL PRIMARY KEY,
-    server_id BIGINT UNIQUE NOT NULL,
+    server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
-    purpose TEXT NOT NULL,
+    meta TEXT NOT NULL,
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,

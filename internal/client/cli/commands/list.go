@@ -83,7 +83,7 @@ func (c *ListSecretsCommand) listCredentials() error {
 			return err
 		} else {
 			for _, cred := range creds {
-				c.printItem(cred.ID, cred.Purpose, cred.Login)
+				c.printItem(cred.ID, cred.Meta, cred.Login)
 			}
 		}
 	}
@@ -96,7 +96,7 @@ func (c *ListSecretsCommand) listNotes() error {
 			return err
 		} else {
 			for _, note := range notes {
-				c.printItem(note.ID, note.Purpose)
+				c.printItem(note.ID, note.Meta)
 			}
 		}
 	}
@@ -109,7 +109,7 @@ func (c *ListSecretsCommand) listFiles() error {
 			return err
 		} else {
 			for _, file := range files {
-				c.printItem(file.ID, file.Purpose)
+				c.printItem(file.ID, file.Meta)
 			}
 		}
 	}
@@ -122,7 +122,7 @@ func (c *ListSecretsCommand) listBankCards() error {
 			return err
 		} else {
 			for _, card := range cards {
-				c.printItem(card.ID, card.Purpose)
+				c.printItem(card.ID, card.Meta)
 			}
 		}
 	}

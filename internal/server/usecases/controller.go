@@ -8,23 +8,26 @@ import (
 )
 
 type BaseController struct {
-	logger   logging.ILogger
-	stor     entities.Storage
-	userRepo entities.UserRepo
-	crypto   entities.ICryptoProvider
+	logger    logging.ILogger
+	stor      entities.Storage
+	userRepo  entities.UserRepo
+	credsRepo entities.CredentialsRepo
+	crypto    entities.ICryptoProvider
 }
 
 func NewBaseController(
 	logger logging.ILogger,
 	stor entities.Storage,
 	userRepo entities.UserRepo,
+	credsRepo entities.CredentialsRepo,
 	crypto entities.ICryptoProvider,
 ) *BaseController {
 	return &BaseController{
-		logger:   logger,
-		stor:     stor,
-		userRepo: userRepo,
-		crypto:   crypto,
+		logger:    logger,
+		stor:      stor,
+		userRepo:  userRepo,
+		credsRepo: credsRepo,
+		crypto:    crypto,
 	}
 }
 
@@ -32,6 +35,7 @@ func (c *BaseController) Route() *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/user/register", c.signUp)
 	r.Post("/user/login", c.signIn)
+	r.Post("/secrets/credentials", c.createCredentials)
 	r.Get("/ping", c.ping)
 	return r
 }

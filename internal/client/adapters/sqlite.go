@@ -106,13 +106,31 @@ func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entr
 	return int(id), nil // TODO: think about proper type conversion and type choices
 }
 
-func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.Credential, error) {
-	var creds []*clientEntities.Credential
+func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.CredentialLocal, error) {
+	var creds []*clientEntities.CredentialLocal
 	query := "select * from credentials where user_id = $1"
 	if err := s.db.Select(&creds, query, userID); err != nil {
 		return nil, err
 	}
 	return creds, nil
+}
+
+func (s *SQLiteStorage) SaveCredentials(credentials *clientEntities.CredentialLocal) error {
+	query := `
+		insert into credentials(server_id, user_id, meta, login, encrypted_password, salt, nonce)
+		values ($1, $2, $3, $4, $5, $6, $7)
+	`
+	_, err := s.db.Exec(
+		query,
+		credentials.ServerID,
+		credentials.UserID,
+		credentials.Meta,
+		credentials.Login,
+		credentials.EncryptedPassword,
+		credentials.Salt,
+		credentials.Nonce,
+	)
+	return err
 }
 
 func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.Note, error) {

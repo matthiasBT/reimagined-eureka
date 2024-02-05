@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"golang.org/x/term"
 
@@ -46,6 +47,20 @@ func readSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize
 			input = append(input, r)
 		}
 	}
+}
+
+func readNonSecretValue(logger logging.ILogger, what string) (string, error) {
+	logger.Info("Enter %s: ", what)
+	scanner := bufio.NewScanner(os.Stdin)
+	var lines []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return strings.Join(lines, "\n"), nil
 }
 
 func getLengthHint(minSize, maxSize int) string {

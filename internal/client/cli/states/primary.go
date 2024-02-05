@@ -52,6 +52,7 @@ func (s *PrimaryState) Execute(line string) (entities.State, entities.CommandRes
 		return state, result
 	}
 	if result.SessionCookie != "" { // TODO: test cookie refresh!
+		s.proxy.SetSessionCookie(result.SessionCookie)
 		s.Commands = createCommands(
 			s.logger,
 			s.storage,
@@ -79,8 +80,9 @@ func createCommands(
 	masterKey string,
 ) []entities.Command {
 	return []entities.Command{
-		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
 		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
+		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
+		cliCommands.NewAddCredentialsCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
 		&cliCommands.QuitCommand{},
 	}
 }

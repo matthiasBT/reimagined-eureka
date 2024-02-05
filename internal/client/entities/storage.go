@@ -10,7 +10,8 @@ type IStorage interface {
 	Tx() (ITx, error)
 	ReadUser(login string) (*User, error) // TODO: split into separate repos?
 	SaveUser(user *User, entropy *common.Entropy) (int, error)
-	ReadCredentials(userID int) ([]*Credential, error)
+	ReadCredentials(userID int) ([]*CredentialLocal, error)
+	SaveCredentials(credentials *CredentialLocal) error
 	ReadNotes(userID int) ([]*Note, error)
 	ReadFiles(userID int) ([]*File, error)
 	ReadBankCards(userID int) ([]*BankCard, error)
@@ -38,20 +39,16 @@ type CookieEncrypted struct {
 	Nonce          []byte `db:"nonce"`
 }
 
-type Credential struct {
-	ID                int    `db:"id"`
-	UserID            int    `db:"user_id"`
-	Purpose           string `db:"purpose"`
-	Login             string `db:"login"`
-	EncryptedPassword []byte `db:"encrypted_password"`
-	Salt              []byte `db:"salt"`
-	Nonce             []byte `db:"nonce"`
+type CredentialLocal struct {
+	common.Credential
+	ServerID int `db:"server_id"`
 }
 
 type Note struct {
 	ID               int    `db:"id"`
+	ServerID         int    `db:"server_id"`
 	UserID           int    `db:"user_id"`
-	Purpose          string `db:"purpose"`
+	Meta             string `db:"meta"`
 	EncryptedContent []byte `db:"encrypted_content"`
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
@@ -59,8 +56,9 @@ type Note struct {
 
 type File struct {
 	ID               int    `db:"id"`
+	ServerID         int    `db:"server_id"`
 	UserID           int    `db:"user_id"`
-	Purpose          string `db:"purpose"`
+	Meta             string `db:"meta"`
 	EncryptedContent []byte `db:"encrypted_content"`
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
@@ -68,8 +66,9 @@ type File struct {
 
 type BankCard struct {
 	ID               int    `db:"id"`
+	ServerID         int    `db:"server_id"`
 	UserID           int    `db:"user_id"`
-	Purpose          string `db:"purpose"`
+	Meta             string `db:"meta"`
 	EncryptedContent []byte `db:"encrypted_content"`
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
