@@ -116,9 +116,9 @@ func authorize(w http.ResponseWriter, session *entities.Session) {
 		Name:     common.SessionCookieName,
 		Value:    session.Token,
 		Path:     "/",
-		Expires:  time.Now().Add(config.SessionTTL),
-		HttpOnly: true,  // Protect against XSS attacks
-		Secure:   false, // Should be true in production to send only over HTTPS
+		Expires:  time.Now().Add(config.SessionTTL), // TODO: add expiration + renewal on client
+		HttpOnly: true,                              // Protect against XSS attacks
+		Secure:   false,                             // Should be true in production to send only over HTTPS
 	}
 	http.SetCookie(w, &cookie)
 }

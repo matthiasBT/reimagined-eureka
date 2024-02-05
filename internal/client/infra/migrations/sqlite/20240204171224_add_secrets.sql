@@ -4,40 +4,44 @@
 -- TODO: table inheritance?
 CREATE TABLE credentials (
     id SERIAL PRIMARY KEY,
+    server_id BIGINT UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     purpose TEXT NOT NULL,
     login TEXT NOT NULL,
     encrypted_password BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
-    UNIQUE (user_id, purpose, login)
+    UNIQUE (user_id, server_id)
 );
 CREATE TABLE notes (
     id SERIAL PRIMARY KEY,
+    server_id BIGINT UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     purpose TEXT NOT NULL,
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
-    UNIQUE (user_id, purpose)
+    UNIQUE (user_id, server_id)
 );
 CREATE TABLE files (
     id SERIAL PRIMARY KEY,
+    server_id BIGINT UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     purpose TEXT NOT NULL,
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
-    UNIQUE (user_id, purpose)
+    UNIQUE (user_id, server_id)
 );
 CREATE TABLE bank_cards (
     id SERIAL PRIMARY KEY,
+    server_id BIGINT UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     purpose TEXT NOT NULL,
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
-    UNIQUE (user_id, purpose)
+    UNIQUE (user_id, server_id)
 );
 CREATE INDEX user_credentials ON credentials(user_id);
 CREATE INDEX user_notes ON notes(user_id);

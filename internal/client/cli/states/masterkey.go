@@ -12,7 +12,10 @@ type MasterKeyState struct {
 	logger         logging.ILogger
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
+	proxy          clientEntities.IProxy
 	login          string
+	password       string
+	sessionCookie  string
 	userID         int
 }
 
@@ -20,7 +23,10 @@ func NewMasterKeyState(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
+	proxy clientEntities.IProxy,
 	login string,
+	password string,
+	sessionCookie string,
 	userID int,
 ) *MasterKeyState {
 	cmds := []cliEntities.Command{
@@ -32,7 +38,10 @@ func NewMasterKeyState(
 		logger:         logger,
 		storage:        storage,
 		cryptoProvider: cryptoProvider,
+		proxy:          proxy,
 		login:          login,
+		password:       password,
+		sessionCookie:  sessionCookie,
 		userID:         userID,
 	}
 }
@@ -40,7 +49,17 @@ func NewMasterKeyState(
 func (s *MasterKeyState) Execute(line string) (cliEntities.State, cliEntities.CommandResult) {
 	state, result := s.GeneralState.Execute(line)
 	if result.MasterKey != "" {
-		state = NewPrimaryState(s.logger, s.storage, s.cryptoProvider, s.userID, result.MasterKey)
+		state = NewPrimaryState(
+			s.logger,
+			s.storage,
+			s.cryptoProvider,
+			s.proxy,
+			s.login,
+			s.password,
+			s.sessionCookie,
+			s.userID,
+			result.MasterKey,
+		)
 	}
 	return state, result
 }

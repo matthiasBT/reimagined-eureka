@@ -9,11 +9,6 @@ CREATE TABLE users (
     entropy_salt BLOB NOT NULL,
     entropy_nonce BLOB NOT NULL
 );
-CREATE TABLE cookies (  -- TODO: store cookies?
-    id integer PRIMARY KEY NOT NULL,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
-    value_encrypted BLOB NOT NULL
-);
 -- +goose StatementEnd
 
 -- +goose Down

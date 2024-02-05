@@ -20,11 +20,16 @@ func NewPrimaryState(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
+	proxy clientEntities.IProxy,
+	login string,
+	password string,
+	sessionCookie string,
 	userID int,
 	masterKey string,
 ) *PrimaryState {
 	cmds := []entities.Command{
 		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
+		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
 		&cliCommands.QuitCommand{},
 	}
 	return &PrimaryState{

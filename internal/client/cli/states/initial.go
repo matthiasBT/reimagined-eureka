@@ -43,7 +43,16 @@ func NewInitialState(
 func (s InitialState) Execute(line string) (cliEntities.State, cliEntities.CommandResult) {
 	state, result := s.GeneralState.Execute(line)
 	if result.Login != "" {
-		state = NewMasterKeyState(s.logger, s.storage, s.cryptoProvider, result.Login, result.UserID)
+		state = NewMasterKeyState(
+			s.logger,
+			s.storage,
+			s.cryptoProvider,
+			s.proxy,
+			result.Login,
+			result.Password,
+			result.SessionCookie,
+			result.UserID,
+		)
 	}
 	return state, result
 }

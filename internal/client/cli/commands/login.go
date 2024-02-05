@@ -54,9 +54,9 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 		}
 		return cliEntities.CommandResult{
 			SuccessMessage: "Logged in successfully (locally)",
-			// SessionCookie: nil  // TODO
-			Login:  c.login,
-			UserID: user.ID,
+			Login:          c.login,
+			Password:       c.password,
+			UserID:         user.ID,
 		}
 	}
 	c.Logger.Warningln("User %s not found locally. Going to fetch it from server", c.login)
@@ -77,8 +77,9 @@ func (c *LoginCommand) Execute() cliEntities.CommandResult {
 	}
 	return cliEntities.CommandResult{
 		SuccessMessage: "Logged in successfully (on server)",
-		SessionCookie:  userData.SessionCookie,
 		Login:          c.login,
+		Password:       c.password,
+		SessionCookie:  userData.SessionCookie,
 		UserID:         userID,
 	}
 }

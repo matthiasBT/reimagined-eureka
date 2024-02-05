@@ -32,14 +32,20 @@ type User struct {
 	EntropyNonce     []byte `db:"entropy_nonce"`
 }
 
+type CookieEncrypted struct {
+	EncryptedValue []byte `db:"value_encrypted"`
+	Salt           []byte `db:"salt"`
+	Nonce          []byte `db:"nonce"`
+}
+
 type Credential struct {
 	ID                int    `db:"id"`
 	UserID            int    `db:"user_id"`
 	Purpose           string `db:"purpose"`
 	Login             string `db:"login"`
 	EncryptedPassword []byte `db:"encrypted_password"`
-	Nonce             []byte `db:"nonce"`
 	Salt              []byte `db:"salt"`
+	Nonce             []byte `db:"nonce"`
 }
 
 type Note struct {
@@ -47,8 +53,8 @@ type Note struct {
 	UserID           int    `db:"user_id"`
 	Purpose          string `db:"purpose"`
 	EncryptedContent []byte `db:"encrypted_content"`
-	Nonce            []byte `db:"nonce"`
 	Salt             []byte `db:"salt"`
+	Nonce            []byte `db:"nonce"`
 }
 
 type File struct {
@@ -56,8 +62,8 @@ type File struct {
 	UserID           int    `db:"user_id"`
 	Purpose          string `db:"purpose"`
 	EncryptedContent []byte `db:"encrypted_content"`
-	Nonce            []byte `db:"nonce"`
 	Salt             []byte `db:"salt"`
+	Nonce            []byte `db:"nonce"`
 }
 
 type BankCard struct {
@@ -65,6 +71,6 @@ type BankCard struct {
 	UserID           int    `db:"user_id"`
 	Purpose          string `db:"purpose"`
 	EncryptedContent []byte `db:"encrypted_content"`
-	Nonce            []byte `db:"nonce"`
 	Salt             []byte `db:"salt"`
+	Nonce            []byte `db:"nonce"`
 }

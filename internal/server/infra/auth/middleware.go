@@ -37,7 +37,7 @@ func Middleware(logger logging.ILogger, userRepo entities.UserRepo) func(next ht
 			}
 			if time.Now().After(session.ExpiresAt) {
 				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte("Session has expired"))
+				w.Write([]byte("Session has expired")) // TODO: use this
 				return
 			}
 			ctx := context.WithValue(r.Context(), entities.ContextKey{Key: "user_id"}, session.UserID)

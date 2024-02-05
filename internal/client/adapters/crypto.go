@@ -99,8 +99,8 @@ func (c *CryptoProvider) Encrypt(what []byte) (*common.EncryptionResult, error) 
 	return &common.EncryptionResult{Ciphertext: ciphertext, Salt: salt, Nonce: nonce}, nil
 }
 
-func (c *CryptoProvider) Decrypt(what, salt, nonce []byte) ([]byte, error) {
-	key := c.deriveKey(c.masterKey, salt)
+func (c *CryptoProvider) Decrypt(what *common.EncryptionResult) ([]byte, error) {
+	key := c.deriveKey(c.masterKey, what.Salt)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, fmt.Errorf("error creating AES cipher block: %v", err)
@@ -109,7 +109,7 @@ func (c *CryptoProvider) Decrypt(what, salt, nonce []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating AES-GCM cipher: %v", err)
 	}
-	decryptedData, err := gcm.Open(nil, nonce, what, nil) // TODO: use additional data
+	decryptedData, err := gcm.Open(nil, what.Nonce, what.Ciphertext, nil) // TODO: use additional data
 	if err != nil {
 		return nil, fmt.Errorf("error decrypting data: %v", err)
 	}

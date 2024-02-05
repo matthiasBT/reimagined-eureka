@@ -9,5 +9,5 @@ type ICryptoProvider interface {
 	VerifyHash(data, target []byte) error
 	SetMasterKey(masterKey string)
 	Encrypt(what []byte) (*common.EncryptionResult, error)
-	Decrypt(what, salt, nonce []byte) ([]byte, error)
+	Decrypt(what *common.EncryptionResult) ([]byte, error)
 }

@@ -6,6 +6,7 @@ import (
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
+	"reimagined_eureka/internal/common"
 )
 
 type MasterKeyCommand struct {
@@ -59,7 +60,12 @@ func (c *MasterKeyCommand) Execute() cliEntities.CommandResult {
 			FailureMessage: fmt.Errorf("failed to validate master-key: %v", err).Error(),
 		}
 	}
-	entropy, err := c.CryptoProvider.Decrypt(user.EntropyEncrypted, user.EntropySalt, user.EntropyNonce)
+	encrypted := common.EncryptionResult{
+		Ciphertext: user.EntropyEncrypted,
+		Salt:       user.EntropySalt,
+		Nonce:      user.EntropyNonce,
+	}
+	entropy, err := c.CryptoProvider.Decrypt(&encrypted)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to validate master-key: %v", err).Error(),
@@ -72,7 +78,6 @@ func (c *MasterKeyCommand) Execute() cliEntities.CommandResult {
 	}
 	return cliEntities.CommandResult{
 		SuccessMessage: "Master-key verified",
-		// SessionCookie: nil  // TODO: pass along?
-		MasterKey: c.masterKey,
+		MasterKey:      c.masterKey,
 	}
 }

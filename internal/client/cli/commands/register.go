@@ -100,20 +100,22 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 	}
 	newUser := &clientEntities.User{Login: c.LoginCommand.login}
 	if err := c.LoginCommand.CryptoProvider.HashPassword(newUser, c.LoginCommand.password); err != nil {
-		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
+		msg := fmt.Errorf("failed to hash user %s password: %v", newUser.Login, err)
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
 	userID, err := c.LoginCommand.Storage.SaveUser(newUser, entropy)
 	if err != nil {
-		msg := fmt.Errorf("failed to store user %s data locally: %v", newUser.Login, err)
+		msg := fmt.Errorf("failed to store user %s locally: %v", newUser.Login, err)
 		defer tx.Rollback()
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
+	newUser.ID = userID
 	return cliEntities.CommandResult{
 		SuccessMessage: "Registered successfully",
-		SessionCookie:  userData.SessionCookie, // TODO: use it
 		Login:          c.login,
+		Password:       c.password,
+		SessionCookie:  userData.SessionCookie,
 		UserID:         userID,
 	}
 }
