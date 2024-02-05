@@ -14,8 +14,6 @@ type AddCredsCommand struct {
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
-	sessionCookie  string
-	masterKey      string
 	userID         int
 	credsLogin     string
 }
@@ -25,8 +23,6 @@ func NewAddCredsCommand(
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
-	sessionCookie string,
-	masterKey string,
 	userID int,
 ) *AddCredsCommand {
 	return &AddCredsCommand{
@@ -34,8 +30,6 @@ func NewAddCredsCommand(
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
 		proxy:          proxy,
-		sessionCookie:  sessionCookie,
-		masterKey:      masterKey,
 		userID:         userID,
 	}
 }

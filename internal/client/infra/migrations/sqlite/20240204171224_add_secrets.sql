@@ -3,7 +3,7 @@
 -- TODO: create indexes for all tables, including those that are not in this migration
 -- TODO: table inheritance?
 CREATE TABLE credentials (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE credentials (
     UNIQUE (user_id, server_id)
 );
 CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE notes (
     UNIQUE (user_id, server_id)
 );
 CREATE TABLE files (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE files (
     UNIQUE (user_id, server_id)
 );
 CREATE TABLE cards (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     server_id INTEGER UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,

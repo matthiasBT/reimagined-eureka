@@ -14,6 +14,7 @@ type IStorage interface {
 	SaveUser(user *User, entropy *common.Entropy) (int, error)
 
 	ReadCredentials(userID int) ([]*CredentialLocal, error)
+	ReadCredential(userID int, credID int) (*CredentialLocal, error)
 	SaveCredentials(credentials *CredentialLocal) error
 
 	ReadNotes(userID int) ([]*NoteLocal, error)

@@ -14,8 +14,6 @@ type AddNoteCommand struct {
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
-	sessionCookie  string
-	masterKey      string
 	userID         int
 }
 
@@ -24,8 +22,6 @@ func NewAddNoteCommand(
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
-	sessionCookie string,
-	masterKey string,
 	userID int,
 ) *AddNoteCommand {
 	return &AddNoteCommand{
@@ -33,8 +29,6 @@ func NewAddNoteCommand(
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
 		proxy:          proxy,
-		sessionCookie:  sessionCookie,
-		masterKey:      masterKey,
 		userID:         userID,
 	}
 }

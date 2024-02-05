@@ -79,6 +79,7 @@ func (c *ListSecretsCommand) validateType(what string) error {
 
 func (c *ListSecretsCommand) listCredentials() error {
 	if c.secretType == secretTypeCreds || c.secretType == secretTypeAll {
+		c.Logger.Warningln("Credentials in storage:")
 		if creds, err := c.Storage.ReadCredentials(c.userID); err != nil {
 			return err
 		} else {
@@ -92,6 +93,7 @@ func (c *ListSecretsCommand) listCredentials() error {
 
 func (c *ListSecretsCommand) listNotes() error {
 	if c.secretType == secretTypeNotes || c.secretType == secretTypeAll {
+		c.Logger.Warningln("Notes in storage:")
 		if notes, err := c.Storage.ReadNotes(c.userID); err != nil {
 			return err
 		} else {
@@ -105,6 +107,7 @@ func (c *ListSecretsCommand) listNotes() error {
 
 func (c *ListSecretsCommand) listFiles() error {
 	if c.secretType == secretTypeFiles || c.secretType == secretTypeAll {
+		c.Logger.Warningln("Files in storage:")
 		if files, err := c.Storage.ReadFiles(c.userID); err != nil {
 			return err
 		} else {
@@ -118,6 +121,7 @@ func (c *ListSecretsCommand) listFiles() error {
 
 func (c *ListSecretsCommand) listCards() error {
 	if c.secretType == secretTypeCards || c.secretType == secretTypeAll {
+		c.Logger.Warningln("Cards in storage:")
 		if cards, err := c.Storage.ReadCards(c.userID); err != nil {
 			return err
 		} else {

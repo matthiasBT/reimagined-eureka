@@ -16,8 +16,6 @@ type AddFileCommand struct {
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
-	sessionCookie  string
-	masterKey      string
 	userID         int
 	filePath       string
 }
@@ -27,8 +25,6 @@ func NewAddFileCommand(
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
-	sessionCookie string,
-	masterKey string,
 	userID int,
 ) *AddFileCommand {
 	return &AddFileCommand{
@@ -36,8 +32,6 @@ func NewAddFileCommand(
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
 		proxy:          proxy,
-		sessionCookie:  sessionCookie,
-		masterKey:      masterKey,
 		userID:         userID,
 	}
 }

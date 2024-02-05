@@ -18,8 +18,6 @@ type AddCardCommand struct {
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
-	sessionCookie  string
-	masterKey      string
 	userID         int
 	cardNumber     string
 }
@@ -29,8 +27,6 @@ func NewAddCardCommand(
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
-	sessionCookie string,
-	masterKey string,
 	userID int,
 ) *AddCardCommand {
 	return &AddCardCommand{
@@ -38,8 +34,6 @@ func NewAddCardCommand(
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
 		proxy:          proxy,
-		sessionCookie:  sessionCookie,
-		masterKey:      masterKey,
 		userID:         userID,
 	}
 }

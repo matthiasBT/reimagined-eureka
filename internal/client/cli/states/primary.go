@@ -82,10 +82,11 @@ func createCommands(
 	return []entities.Command{
 		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
 		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
-		cliCommands.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
-		cliCommands.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
-		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
-		cliCommands.NewAddCardCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
+		cliCommands.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, userID),
+		cliCommands.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, userID),
+		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, userID),
+		cliCommands.NewAddCardCommand(logger, storage, cryptoProvider, proxy, userID),
+		cliCommands.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
 		&cliCommands.QuitCommand{},
 	}
 }

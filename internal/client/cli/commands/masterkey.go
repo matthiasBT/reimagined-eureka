@@ -36,7 +36,7 @@ func (c *MasterKeyCommand) GetName() string {
 }
 
 func (c *MasterKeyCommand) GetDescription() string {
-	return "set (for new users) or check (for existing users) the master-key that will be used for encryption"
+	return "check the master-key that will be used for encryption"
 }
 
 func (c *MasterKeyCommand) Validate(args ...string) error {

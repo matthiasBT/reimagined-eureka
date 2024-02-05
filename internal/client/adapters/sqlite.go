@@ -115,6 +115,18 @@ func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.Credentia
 	return creds, nil
 }
 
+func (s *SQLiteStorage) ReadCredential(userID int, credID int) (*clientEntities.CredentialLocal, error) {
+	var cred clientEntities.CredentialLocal
+	query := "select * from credentials where user_id = $1 and id = $2"
+	if err := s.db.Get(&cred, query, userID, credID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &cred, nil
+}
+
 func (s *SQLiteStorage) SaveCredentials(credentials *clientEntities.CredentialLocal) error {
 	query := `
 		insert into credentials(server_id, user_id, meta, login, encrypted_password, salt, nonce)
