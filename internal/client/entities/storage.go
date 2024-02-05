@@ -14,7 +14,8 @@ type IStorage interface {
 	SaveCredentials(credentials *CredentialLocal) error
 	ReadNotes(userID int) ([]*NoteLocal, error)
 	SaveNote(credentials *NoteLocal) error
-	ReadFiles(userID int) ([]*File, error)
+	ReadFiles(userID int) ([]*FileLocal, error)
+	SaveFile(credentials *FileLocal) error
 	ReadBankCards(userID int) ([]*BankCard, error)
 }
 
@@ -50,16 +51,9 @@ type NoteLocal struct {
 	ServerID int `db:"server_id"`
 }
 
-// TODO: replace these:
-
-type File struct {
-	ID               int    `db:"id"`
-	ServerID         int    `db:"server_id"`
-	UserID           int    `db:"user_id"`
-	Meta             string `db:"meta"`
-	EncryptedContent []byte `db:"encrypted_content"`
-	Salt             []byte `db:"salt"`
-	Nonce            []byte `db:"nonce"`
+type FileLocal struct {
+	common.File
+	ServerID int `db:"server_id"`
 }
 
 type BankCard struct {

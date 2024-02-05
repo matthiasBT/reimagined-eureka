@@ -46,3 +46,9 @@ type NotesRepo interface {
 	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.NoteReq, error)
 	// ReadVersion
 }
+
+type FilesRepo interface {
+	Write(ctx context.Context, tx Tx, userID int, data *common.FileReq) (int, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.FileReq, error)
+	// ReadVersion
+}

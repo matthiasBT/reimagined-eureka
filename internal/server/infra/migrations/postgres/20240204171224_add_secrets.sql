@@ -18,6 +18,7 @@ CREATE TABLE credentials_versions (
     encrypted_password BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (cred_id, version)
 );
 CREATE TABLE notes (
@@ -36,19 +37,29 @@ CREATE TABLE notes_versions (
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (note_id, version)
 );
--- TODO: fix all the tables below this line
 CREATE TABLE files (
     id SERIAL PRIMARY KEY,
-    server_id INTEGER,
     user_id INTEGER NOT NULL REFERENCES users(id),
     meta TEXT NOT NULL,
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
-    salt BYTEA NOT NULL,
-    UNIQUE (user_id, meta)
+    salt BYTEA NOT NULL
 );
+CREATE TABLE files_versions (
+    id SERIAL PRIMARY KEY,
+    file_id INTEGER NOT NULL REFERENCES files(id),
+    version INTEGER NOT NULL,
+    meta TEXT NOT NULL,
+    encrypted_content BYTEA NOT NULL,
+    nonce BYTEA NOT NULL,
+    salt BYTEA NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (file_id, version)
+);
+-- TODO: fix all the tables below this line
 CREATE TABLE bank_cards (
     id SERIAL PRIMARY KEY,
     server_id INTEGER,

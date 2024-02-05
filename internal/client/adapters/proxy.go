@@ -20,6 +20,7 @@ const pathSignIn = "/user/login"
 const pathSignUp = "/user/register"
 const pathAddCredentials = "/secrets/credentials"
 const pathAddNote = "/secrets/notes"
+const pathAddFile = "/secrets/files"
 
 var ErrNoSessionCookie = errors.New("no session cookie set")
 
@@ -56,31 +57,7 @@ func (p *ServerProxy) AddCredentials(creds *common.CredentialsReq) (int, error) 
 		Path:   urlPrefix + pathAddCredentials,
 	}
 	payload, err := json.Marshal(creds)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create request: %v", err)
-	}
-
-	var buf bytes.Buffer
-	if _, err := buf.Write(payload); err != nil {
-		return 0, fmt.Errorf("failed to create request: %v", err)
-	}
-
-	req, err := http.NewRequest("POST", fullURL.String(), &buf)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create request: %v", err)
-	}
-	req.Header.Add("Content-Type", "application/json")
-	p.addSessionCookie(req)
-
-	body, _, err := getResponse(req)
-	if err != nil {
-		return 0, err
-	}
-	rowID, err := strconv.Atoi(string(body))
-	if err != nil {
-		return 0, fmt.Errorf("incorrect response from server: can't interpret response as row ID")
-	}
-	return rowID, nil
+	return p.addSecret(fullURL.String(), payload, err)
 }
 
 func (p *ServerProxy) AddNote(note *common.NoteReq) (int, error) {
@@ -93,31 +70,20 @@ func (p *ServerProxy) AddNote(note *common.NoteReq) (int, error) {
 		Path:   urlPrefix + pathAddNote,
 	}
 	payload, err := json.Marshal(note)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create request: %v", err)
-	}
+	return p.addSecret(fullURL.String(), payload, err)
+}
 
-	var buf bytes.Buffer
-	if _, err := buf.Write(payload); err != nil {
-		return 0, fmt.Errorf("failed to create request: %v", err)
+func (p *ServerProxy) AddFile(file *common.FileReq) (int, error) {
+	if p.sessionCookie == "" {
+		return 0, ErrNoSessionCookie
 	}
-
-	req, err := http.NewRequest("POST", fullURL.String(), &buf)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create request: %v", err)
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathAddFile,
 	}
-	req.Header.Add("Content-Type", "application/json")
-	p.addSessionCookie(req)
-
-	body, _, err := getResponse(req)
-	if err != nil {
-		return 0, err
-	}
-	rowID, err := strconv.Atoi(string(body))
-	if err != nil {
-		return 0, fmt.Errorf("incorrect response from server: can't interpret response as row ID")
-	}
-	return rowID, nil
+	payload, err := json.Marshal(file)
+	return p.addSecret(fullURL.String(), payload, err)
 }
 
 func (p *ServerProxy) signInOrUp(
@@ -177,6 +143,34 @@ func (p *ServerProxy) addSessionCookie(req *http.Request) {
 		Path:  "/",
 	}
 	req.AddCookie(cookie)
+}
+
+func (p *ServerProxy) addSecret(url string, payload []byte, err error) (int, error) {
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if _, err := buf.Write(payload); err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", url, &buf)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Add("Content-Type", "application/json")
+	p.addSessionCookie(req)
+
+	body, _, err := getResponse(req)
+	if err != nil {
+		return 0, err
+	}
+	rowID, err := strconv.Atoi(string(body))
+	if err != nil {
+		return 0, fmt.Errorf("incorrect response from server: can't interpret response as row ID")
+	}
+	return rowID, nil
 }
 
 func getResponse(req *http.Request) ([]byte, []*http.Cookie, error) {

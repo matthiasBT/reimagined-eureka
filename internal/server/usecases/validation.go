@@ -101,3 +101,32 @@ func validateNote(w http.ResponseWriter, r *http.Request) *common.NoteReq {
 	}
 	return &note
 }
+
+func validateFile(w http.ResponseWriter, r *http.Request) *common.FileReq {
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Supply data as JSON"))
+		return nil
+	}
+	var file common.FileReq
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to read request body"))
+		return nil
+	}
+	if err := json.Unmarshal(body, &file); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to parse file request"))
+		return nil
+	}
+	if file.Meta == "" ||
+		file.Value == nil ||
+		file.Value.Ciphertext == nil ||
+		file.Value.Salt == nil ||
+		file.Value.Nonce == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("All mandatory fields must be supplied"))
+	}
+	return &file
+}

@@ -84,6 +84,7 @@ func createCommands(
 		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
 		cliCommands.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
 		cliCommands.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
+		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, sessionCookie, masterKey, userID),
 		&cliCommands.QuitCommand{},
 	}
 }

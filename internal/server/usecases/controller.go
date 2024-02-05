@@ -13,6 +13,7 @@ type BaseController struct {
 	userRepo  entities.UserRepo
 	credsRepo entities.CredentialsRepo
 	notesRepo entities.NotesRepo
+	filesRepo entities.FilesRepo
 	crypto    entities.ICryptoProvider
 }
 
@@ -22,6 +23,7 @@ func NewBaseController(
 	userRepo entities.UserRepo,
 	credsRepo entities.CredentialsRepo,
 	notesRepo entities.NotesRepo,
+	filesRepo entities.FilesRepo,
 	crypto entities.ICryptoProvider,
 ) *BaseController {
 	return &BaseController{
@@ -30,6 +32,7 @@ func NewBaseController(
 		userRepo:  userRepo,
 		credsRepo: credsRepo,
 		notesRepo: notesRepo,
+		filesRepo: filesRepo,
 		crypto:    crypto,
 	}
 }
@@ -40,6 +43,7 @@ func (c *BaseController) Route() *chi.Mux {
 	r.Post("/user/login", c.signIn)
 	r.Post("/secrets/credentials", c.createCredentials)
 	r.Post("/secrets/notes", c.createNote)
+	r.Post("/secrets/files", c.createFile)
 	r.Get("/ping", c.ping)
 	return r
 }

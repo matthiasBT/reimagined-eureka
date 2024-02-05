@@ -150,6 +150,23 @@ func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
 	return err
 }
 
+func (s *SQLiteStorage) SaveFile(file *clientEntities.FileLocal) error {
+	query := `
+		insert into files(server_id, user_id, meta, encrypted_content, salt, nonce)
+		values ($1, $2, $3, $4, $5, $6)
+	`
+	_, err := s.db.Exec(
+		query,
+		file.ServerID,
+		file.UserID,
+		file.Meta,
+		file.EncryptedContent,
+		file.Salt,
+		file.Nonce,
+	)
+	return err
+}
+
 func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
 	var notes []*clientEntities.NoteLocal
 	query := "select * from notes where user_id = $1"
@@ -159,8 +176,8 @@ func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, erro
 	return notes, nil
 }
 
-func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.File, error) {
-	var files []*clientEntities.File
+func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.FileLocal, error) {
+	var files []*clientEntities.FileLocal
 	query := "select * from files where user_id = $1"
 	if err := s.db.Select(&files, query, userID); err != nil {
 		return nil, err

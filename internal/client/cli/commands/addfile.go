@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
@@ -9,7 +11,7 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-type AddNoteCommand struct {
+type AddFileCommand struct {
 	Logger         logging.ILogger
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
@@ -17,9 +19,10 @@ type AddNoteCommand struct {
 	sessionCookie  string
 	masterKey      string
 	userID         int
+	filePath       string
 }
 
-func NewAddNoteCommand(
+func NewAddFileCommand(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
@@ -27,8 +30,8 @@ func NewAddNoteCommand(
 	sessionCookie string,
 	masterKey string,
 	userID int,
-) *AddNoteCommand {
-	return &AddNoteCommand{
+) *AddFileCommand {
+	return &AddFileCommand{
 		Logger:         logger,
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
@@ -39,53 +42,54 @@ func NewAddNoteCommand(
 	}
 }
 
-func (c *AddNoteCommand) GetName() string {
-	return "add-note"
+func (c *AddFileCommand) GetName() string {
+	return "add-file"
 }
 
-func (c *AddNoteCommand) GetDescription() string {
-	return "add a text note"
+func (c *AddFileCommand) GetDescription() string {
+	return "add binary file contents"
 }
 
-func (c *AddNoteCommand) Validate(args ...string) error {
-	if len(args) != 0 {
-		return fmt.Errorf("example: add-note")
+func (c *AddFileCommand) Validate(args ...string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("example: add-file <path>")
 	}
+	c.filePath = args[0]
 	return nil
 }
 
-func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
-	content, err := readNonSecretValue(c.Logger, "note content") // don't replace with '*' because it's multiline
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read note content: %v", err).Error(),
-		}
-	}
+func (c *AddFileCommand) Execute() cliEntities.CommandResult {
 	meta, err := readNonSecretValue(c.Logger, "meta information")
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read meta information: %v", err).Error(),
 		}
 	}
-	encrypted, err := c.CryptoProvider.Encrypt([]byte(content))
+	rawData, err := readFile(c.filePath)
 	if err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to encrypt note content: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to read file %s: %v", c.filePath, err).Error(),
 		}
 	}
-	payload := common.NoteReq{
+	encrypted, err := c.CryptoProvider.Encrypt(rawData)
+	if err != nil {
+		return cliEntities.CommandResult{
+			FailureMessage: fmt.Errorf("failed to encrypt file data: %v", err).Error(),
+		}
+	}
+	payload := common.FileReq{
 		ServerID: nil,
 		Meta:     meta,
 		Value:    encrypted,
 	}
-	rowID, err := c.proxy.AddNote(&payload)
+	rowID, err := c.proxy.AddFile(&payload)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
 	}
-	noteLocal := clientEntities.NoteLocal{
-		Note: common.Note{
+	fileLocal := clientEntities.FileLocal{
+		File: common.File{
 			UserID:           c.userID,
 			Meta:             payload.Meta,
 			EncryptedContent: payload.Value.Ciphertext,
@@ -94,12 +98,25 @@ func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: rowID,
 	}
-	if err := c.Storage.SaveNote(&noteLocal); err != nil {
+	if err := c.Storage.SaveFile(&fileLocal); err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to store note locally: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to store file data locally: %v", err).Error(),
 		}
 	}
 	return cliEntities.CommandResult{
 		SuccessMessage: "Successfully stored on server and locally",
 	}
+}
+
+func readFile(filepath string) ([]byte, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

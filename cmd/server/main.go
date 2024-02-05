@@ -54,8 +54,9 @@ func main() {
 	userRepo := repositories.NewPGUserRepo(logger, storage)
 	credsRepo := repositories.NewCredentialsRepo(logger, storage)
 	notesRepo := repositories.NewNotesRepo(logger, storage)
+	filesRepo := repositories.NewFilesRepo(logger, storage)
 	crypto := adapters.CryptoProvider{Logger: logger}
-	controller := usecases.NewBaseController(logger, storage, userRepo, credsRepo, notesRepo, &crypto)
+	controller := usecases.NewBaseController(logger, storage, userRepo, credsRepo, notesRepo, filesRepo, &crypto)
 	r := setupServer(logger, userRepo, controller)
 	srv := http.Server{Addr: conf.ServerAddr, Handler: r}
 

@@ -153,6 +153,28 @@ func (c *BaseController) createNote(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
+func (c *BaseController) createFile(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	file := validateFile(w, r)
+	if file == nil {
+		return
+	}
+	tx, err := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	rowId, err := c.filesRepo.Write(r.Context(), tx, *userID, file)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to write file: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	w.Write([]byte(strconv.Itoa(rowId)))
+}
+
 func (c *BaseController) ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }

@@ -8,6 +8,7 @@ type IProxy interface {
 	SetSessionCookie(cookie string)
 	AddCredentials(creds *common.CredentialsReq) (int, error)
 	AddNote(creds *common.NoteReq) (int, error)
+	AddFile(creds *common.FileReq) (int, error)
 }
 
 type UserDataResponse struct {

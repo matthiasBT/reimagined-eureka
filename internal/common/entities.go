@@ -45,3 +45,18 @@ type Note struct {
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
 }
+
+type FileReq struct {
+	ServerID *int
+	Meta     string
+	Value    *EncryptionResult
+}
+
+type File struct {
+	ID               int    `db:"id"`
+	UserID           int    `db:"user_id"`
+	Meta             string `db:"meta"`
+	EncryptedContent []byte `db:"encrypted_content"`
+	Salt             []byte `db:"salt"`
+	Nonce            []byte `db:"nonce"`
+}
