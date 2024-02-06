@@ -14,7 +14,7 @@ type ListSecretsCommand struct {
 	logger         logging.ILogger
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
-	userID         int // todo: check exported members of all structs!
+	userID         int
 	secretType     string
 }
 
