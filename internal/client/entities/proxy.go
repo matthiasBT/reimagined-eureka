@@ -15,6 +15,7 @@ type IProxy interface {
 	AddNote(note *common.NoteReq) (int, error)
 	UpdateNote(note *common.NoteReq) error
 	DeleteNote(rowID int) error
+	ReadNotes(startID int, batchSize int) ([]*common.NoteReq, error)
 
 	AddFile(file *common.FileReq) (int, error)
 	UpdateFile(file *common.FileReq) error

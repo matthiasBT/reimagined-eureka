@@ -65,7 +65,7 @@ func (r *CredentialsRepo) ReadMany(
 	query := "select * from credentials where user_id = $1 and id > $2 and not is_deleted order by id limit $3"
 	if err := tx.SelectContext(ctx, &creds, query, userID, startID, batchSize); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil // TODO: test what happens
+			return nil, nil
 		}
 		return nil, err
 	}

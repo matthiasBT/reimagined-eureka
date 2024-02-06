@@ -62,6 +62,38 @@ func (p *ServerProxy) AddCredentials(creds *common.CredentialsReq) (int, error) 
 }
 
 func (p *ServerProxy) ReadCredentials(startID int, batchSize int) ([]*common.CredentialsReq, error) {
+	body, err := p.readMany(urlPrefix+pathCredentials, startID, batchSize)
+	if err != nil {
+		return nil, err
+	}
+	var result []*common.CredentialsReq
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to parse credentials from server response: %v", err)
+	}
+	return result, nil
+}
+
+func (p *ServerProxy) ReadNotes(startID int, batchSize int) ([]*common.NoteReq, error) {
+	body, err := p.readMany(urlPrefix+pathNote, startID, batchSize)
+	if err != nil {
+		return nil, err
+	}
+	var result []*common.NoteReq
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to parse notes from server response: %v", err)
+	}
+	return result, nil
+}
+
+//func (p *ServerProxy) ReadFiles(startID int, batchSize int) ([]*common.CredentialsReq, error) {
+//	return p.readMany(urlPrefix+pathCredentials, startID, batchSize)
+//}
+//
+//func (p *ServerProxy) ReadCards(startID int, batchSize int) ([]*common.CredentialsReq, error) {
+//	return p.readMany(urlPrefix+pathCredentials, startID, batchSize)
+//}
+
+func (p *ServerProxy) readMany(urlPath string, startID int, batchSize int) ([]byte, error) {
 	if p.sessionCookie == "" {
 		return nil, ErrNoSessionCookie
 	}
@@ -71,7 +103,7 @@ func (p *ServerProxy) ReadCredentials(startID int, batchSize int) ([]*common.Cre
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathCredentials,
+		Path:   urlPath,
 	}
 	req, err := http.NewRequest("GET", fullURL.String()+"?"+params.Encode(), nil)
 	if err != nil {
@@ -82,11 +114,7 @@ func (p *ServerProxy) ReadCredentials(startID int, batchSize int) ([]*common.Cre
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %v", err)
 	}
-	var result []*common.CredentialsReq
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, fmt.Errorf("failed to parse server response: %v", err)
-	}
-	return result, nil
+	return body, nil
 }
 
 func (p *ServerProxy) AddNote(note *common.NoteReq) (int, error) {

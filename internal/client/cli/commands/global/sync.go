@@ -66,7 +66,13 @@ func (c *SyncCommand) Execute() cliEntities.CommandResult {
 	if err := c.syncCredentials(); err != nil {
 		defer tx.Rollback()
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to sync credentials: %v", err).Error(),
+			FailureMessage: fmt.Errorf("sync aborted, failed to sync credentials: %v", err).Error(),
+		}
+	}
+	if err := c.syncNotes(); err != nil {
+		defer tx.Rollback()
+		return cliEntities.CommandResult{
+			FailureMessage: fmt.Errorf("sync aborted, failed to sync notes: %v", err).Error(),
 		}
 	}
 	return cliEntities.CommandResult{
@@ -99,6 +105,36 @@ func (c *SyncCommand) syncCredentials() error {
 				ServerID: *row.ServerID,
 			}
 			if err := c.Storage.SaveCredentials(&prepared); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+func (c *SyncCommand) syncNotes() error {
+	var startID int
+	for {
+		result, err := c.proxy.ReadNotes(startID, commands.SyncNotesBatchSize)
+		if err != nil {
+			return err
+		}
+		if result == nil || len(result) == 0 {
+			c.Logger.Warningln("Notes synced")
+			return nil
+		}
+		for _, row := range result {
+			startID = *row.ServerID
+			prepared := clientEntities.NoteLocal{
+				Note: common.Note{
+					UserID:           c.userID,
+					Meta:             row.Meta,
+					EncryptedContent: row.Value.Ciphertext,
+					Salt:             row.Value.Salt,
+					Nonce:            row.Value.Nonce,
+				},
+				ServerID: *row.ServerID,
+			}
+			if err := c.Storage.SaveNote(&prepared); err != nil {
 				return err
 			}
 		}
