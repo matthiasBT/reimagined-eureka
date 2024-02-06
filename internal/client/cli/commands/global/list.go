@@ -1,9 +1,10 @@
-package commands
+package global
 
 import (
 	"fmt"
 	"strings"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -41,7 +42,7 @@ func (c *ListSecretsCommand) GetDescription() string {
 
 func (c *ListSecretsCommand) Validate(args ...string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("example: list <type>. Supported types: %s", listSupportedTypes())
+		return fmt.Errorf("example: list <type>. Supported types: %s", commands.ListSupportedTypes())
 	}
 	secretType := args[0]
 	if err := c.validateType(secretType); err != nil {
@@ -71,16 +72,16 @@ func (c *ListSecretsCommand) Execute() cliEntities.CommandResult {
 }
 
 func (c *ListSecretsCommand) validateType(what string) error {
-	for _, tp := range supportedTypes {
+	for _, tp := range commands.SupportedTypes {
 		if what == tp {
 			return nil
 		}
 	}
-	return fmt.Errorf("unsupported secret type, must be one of those: %s", listSupportedTypes())
+	return fmt.Errorf("unsupported secret type, must be one of those: %s", commands.ListSupportedTypes())
 }
 
 func (c *ListSecretsCommand) listCredentials() error {
-	if c.secretType == secretTypeCreds || c.secretType == secretTypeAll {
+	if c.secretType == commands.SecretTypeCreds || c.secretType == commands.SecretTypeAll {
 		c.Logger.Warningln("Credentials in storage:")
 		if creds, err := c.Storage.ReadCredentials(c.userID); err != nil {
 			return err
@@ -94,7 +95,7 @@ func (c *ListSecretsCommand) listCredentials() error {
 }
 
 func (c *ListSecretsCommand) listNotes() error {
-	if c.secretType == secretTypeNotes || c.secretType == secretTypeAll {
+	if c.secretType == commands.SecretTypeNotes || c.secretType == commands.SecretTypeAll {
 		c.Logger.Warningln("Notes in storage:")
 		if notes, err := c.Storage.ReadNotes(c.userID); err != nil {
 			return err
@@ -108,7 +109,7 @@ func (c *ListSecretsCommand) listNotes() error {
 }
 
 func (c *ListSecretsCommand) listFiles() error {
-	if c.secretType == secretTypeFiles || c.secretType == secretTypeAll {
+	if c.secretType == commands.SecretTypeFiles || c.secretType == commands.SecretTypeAll {
 		c.Logger.Warningln("Files in storage:")
 		if files, err := c.Storage.ReadFiles(c.userID); err != nil {
 			return err
@@ -122,7 +123,7 @@ func (c *ListSecretsCommand) listFiles() error {
 }
 
 func (c *ListSecretsCommand) listCards() error {
-	if c.secretType == secretTypeCards || c.secretType == secretTypeAll {
+	if c.secretType == commands.SecretTypeCards || c.secretType == commands.SecretTypeAll {
 		c.Logger.Warningln("Cards in storage:")
 		if cards, err := c.Storage.ReadCards(c.userID); err != nil {
 			return err
@@ -146,5 +147,5 @@ func (c *ListSecretsCommand) printItem(id int, args ...string) {
 	for _, arg := range args {
 		c.Logger.Infoln("%s", arg)
 	}
-	c.Logger.Infoln(strings.Repeat(secretDelimiterChar, secretDelimiterWidth))
+	c.Logger.Infoln(strings.Repeat(commands.SecretDelimiterChar, commands.SecretDelimiterWidth))
 }

@@ -1,9 +1,9 @@
 package states
 
 import (
-	cliCommands "reimagined_eureka/internal/client/cli/commands"
 	"reimagined_eureka/internal/client/cli/commands/add"
 	delete2 "reimagined_eureka/internal/client/cli/commands/delete"
+	"reimagined_eureka/internal/client/cli/commands/global"
 	"reimagined_eureka/internal/client/cli/commands/reveal"
 	"reimagined_eureka/internal/client/cli/commands/update"
 	"reimagined_eureka/internal/client/cli/entities"
@@ -77,9 +77,9 @@ func createCommands(
 	userID int,
 ) []entities.Command {
 	return []entities.Command{
-		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
+		global.NewRefreshSessionCommand(logger, proxy, login, password),
 
-		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
+		global.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
 
 		add.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, userID),
 		add.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, userID),
@@ -101,6 +101,6 @@ func createCommands(
 		delete2.NewDeleteFileCommand(storage, proxy, userID),
 		delete2.NewDeleteCardCommand(storage, proxy, userID),
 
-		&cliCommands.QuitCommand{},
+		&global.QuitCommand{},
 	}
 }

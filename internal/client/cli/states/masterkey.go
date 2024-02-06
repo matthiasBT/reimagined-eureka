@@ -1,8 +1,8 @@
 package states
 
 import (
-	cliCommands "reimagined_eureka/internal/client/cli/commands"
 	"reimagined_eureka/internal/client/cli/commands/auth"
+	cliCommands "reimagined_eureka/internal/client/cli/commands/global"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
