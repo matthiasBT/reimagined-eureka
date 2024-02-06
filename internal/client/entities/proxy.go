@@ -20,6 +20,7 @@ type IProxy interface {
 	AddFile(file *common.FileReq) (int, error)
 	UpdateFile(file *common.FileReq) error
 	DeleteFile(rowID int) error
+	ReadFiles(startID int, batchSize int) ([]*common.FileReq, error)
 
 	AddCard(card *common.CardReq) (int, error)
 	UpdateCard(card *common.CardReq) error

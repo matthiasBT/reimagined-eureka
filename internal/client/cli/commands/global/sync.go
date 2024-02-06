@@ -75,6 +75,12 @@ func (c *SyncCommand) Execute() cliEntities.CommandResult {
 			FailureMessage: fmt.Errorf("sync aborted, failed to sync notes: %v", err).Error(),
 		}
 	}
+	if err := c.syncFiles(); err != nil {
+		defer tx.Rollback()
+		return cliEntities.CommandResult{
+			FailureMessage: fmt.Errorf("sync aborted, failed to sync files: %v", err).Error(),
+		}
+	}
 	return cliEntities.CommandResult{
 		SuccessMessage: "Sync completed",
 	}
@@ -135,6 +141,36 @@ func (c *SyncCommand) syncNotes() error {
 				ServerID: *row.ServerID,
 			}
 			if err := c.Storage.SaveNote(&prepared); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+func (c *SyncCommand) syncFiles() error {
+	var startID int
+	for {
+		result, err := c.proxy.ReadFiles(startID, commands.SyncFilesBatchSize)
+		if err != nil {
+			return err
+		}
+		if result == nil || len(result) == 0 {
+			c.Logger.Warningln("Files synced")
+			return nil
+		}
+		for _, row := range result {
+			startID = *row.ServerID
+			prepared := clientEntities.FileLocal{
+				File: common.File{
+					UserID:           c.userID,
+					Meta:             row.Meta,
+					EncryptedContent: row.Value.Ciphertext,
+					Salt:             row.Value.Salt,
+					Nonce:            row.Value.Nonce,
+				},
+				ServerID: *row.ServerID,
+			}
+			if err := c.Storage.SaveFile(&prepared); err != nil {
 				return err
 			}
 		}

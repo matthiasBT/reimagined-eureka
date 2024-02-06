@@ -69,6 +69,33 @@ func (r *FilesRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowI
 	return nil
 }
 
+func (r *FilesRepo) ReadMany(
+	ctx context.Context, tx entities.Tx, userID, startID, batchSize int,
+) ([]*common.FileReq, error) {
+	var files []common.Note
+	query := "select * from files where user_id = $1 and id > $2 and not is_deleted order by id limit $3"
+	if err := tx.SelectContext(ctx, &files, query, userID, startID, batchSize); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var result = make([]*common.FileReq, 0, len(files))
+	for _, row := range files {
+		resultRow := common.FileReq{
+			ServerID: &row.ID,
+			Meta:     row.Meta,
+			Value: &common.EncryptionResult{
+				Ciphertext: row.EncryptedContent,
+				Salt:       row.Salt,
+				Nonce:      row.Nonce,
+			},
+		}
+		result = append(result, &resultRow)
+	}
+	return result, nil
+}
+
 func (r *FilesRepo) create(
 	ctx context.Context, tx entities.Tx, userID int, data *common.FileReq,
 ) (int, error) {

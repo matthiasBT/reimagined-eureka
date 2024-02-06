@@ -72,16 +72,16 @@ func (r *NotesRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowI
 func (r *NotesRepo) ReadMany(
 	ctx context.Context, tx entities.Tx, userID, startID, batchSize int,
 ) ([]*common.NoteReq, error) {
-	var creds []common.Note
+	var notes []common.Note
 	query := "select * from notes where user_id = $1 and id > $2 and not is_deleted order by id limit $3"
-	if err := tx.SelectContext(ctx, &creds, query, userID, startID, batchSize); err != nil {
+	if err := tx.SelectContext(ctx, &notes, query, userID, startID, batchSize); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	var result = make([]*common.NoteReq, 0, len(creds))
-	for _, row := range creds {
+	var result = make([]*common.NoteReq, 0, len(notes))
+	for _, row := range notes {
 		resultRow := common.NoteReq{
 			ServerID: &row.ID,
 			Meta:     row.Meta,

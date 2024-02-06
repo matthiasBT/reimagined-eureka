@@ -85,10 +85,18 @@ func (p *ServerProxy) ReadNotes(startID int, batchSize int) ([]*common.NoteReq, 
 	return result, nil
 }
 
-//func (p *ServerProxy) ReadFiles(startID int, batchSize int) ([]*common.CredentialsReq, error) {
-//	return p.readMany(urlPrefix+pathCredentials, startID, batchSize)
-//}
-//
+func (p *ServerProxy) ReadFiles(startID int, batchSize int) ([]*common.FileReq, error) {
+	body, err := p.readMany(urlPrefix+pathFile, startID, batchSize)
+	if err != nil {
+		return nil, err
+	}
+	var result []*common.FileReq
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to parse files from server response: %v", err)
+	}
+	return result, nil
+}
+
 //func (p *ServerProxy) ReadCards(startID int, batchSize int) ([]*common.CredentialsReq, error) {
 //	return p.readMany(urlPrefix+pathCredentials, startID, batchSize)
 //}

@@ -231,6 +231,38 @@ func (c *BaseController) getNotes(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+func (c *BaseController) getFiles(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	startID, batchSize, err := getSyncParams(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	tx, _ := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	result, err := c.filesRepo.ReadMany(r.Context(), tx, *userID, startID, batchSize)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to get files: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	payload, err := json.Marshal(result)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to get files: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	w.Write(payload)
+}
+
 func (c *BaseController) deleteNote(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {
