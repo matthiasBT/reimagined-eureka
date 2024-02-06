@@ -92,7 +92,7 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 	entropyEncrypted := common.EncryptionResult{
 		Ciphertext: user.EntropyEncrypted,
 		Salt:       user.EntropySalt,
-		Nonce:      user.EntropySalt,
+		Nonce:      user.EntropyNonce,
 	}
 	entropy := &common.Entropy{
 		EncryptionResult: &entropyEncrypted,

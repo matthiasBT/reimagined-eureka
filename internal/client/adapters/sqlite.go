@@ -218,6 +218,18 @@ func (s *SQLiteStorage) ReadCards(userID int) ([]*clientEntities.CardLocal, erro
 	return cards, nil
 }
 
+func (s *SQLiteStorage) ReadCard(userID int, cardID int) (*clientEntities.CardLocal, error) {
+	var card clientEntities.CardLocal
+	query := "select * from cards where user_id = $1 and id = $2"
+	if err := s.db.Get(&card, query, userID, cardID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &card, nil
+}
+
 func (s *SQLiteStorage) SaveCards(card *clientEntities.CardLocal) error {
 	query := `
 		insert into cards(server_id, user_id, meta, encrypted_content, salt, nonce)

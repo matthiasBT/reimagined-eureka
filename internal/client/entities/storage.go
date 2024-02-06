@@ -25,6 +25,7 @@ type IStorage interface {
 	SaveFile(file *FileLocal) error
 
 	ReadCards(userID int) ([]*CardLocal, error)
+	ReadCard(userID int, cardID int) (*CardLocal, error)
 	SaveCards(card *CardLocal) error
 }
 
@@ -66,8 +67,7 @@ type FileLocal struct {
 }
 
 type CardDataPlain struct {
-	Month, Year, CSC    int
-	FirstName, LastName string
+	Month, Year, CSC, Number, FirstName, LastName string
 }
 
 type CardLocal struct {

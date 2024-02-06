@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
@@ -14,7 +13,7 @@ type RevealCredsCommand struct {
 	logger         logging.ILogger
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
-	userID         int // TODO: check userID too!
+	userID         int
 	rowID          int
 }
 
@@ -44,9 +43,9 @@ func (c *RevealCredsCommand) Validate(args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("example: reveal-creds <ID>")
 	}
-	rowID, err := strconv.Atoi(args[0])
-	if err != nil || rowID <= 0 {
-		return fmt.Errorf("value is a not a positive number")
+	rowID, err := parsePositiveInt(args[0])
+	if err != nil {
+		return err
 	}
 	c.rowID = rowID
 	return nil

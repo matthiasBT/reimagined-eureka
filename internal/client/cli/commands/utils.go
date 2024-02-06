@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"golang.org/x/term"
@@ -88,4 +89,12 @@ func trimToNRunes(s string, n int) string {
 		runeCount++
 	}
 	return s
+}
+
+func parsePositiveInt(what string) (int, error) {
+	rowID, err := strconv.Atoi(what)
+	if err != nil || rowID <= 0 {
+		return 0, fmt.Errorf("value is a not a positive number")
+	}
+	return rowID, nil
 }

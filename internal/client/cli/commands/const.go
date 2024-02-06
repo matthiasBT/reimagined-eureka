@@ -16,6 +16,9 @@ const secretTypeAll = "all"
 const secretDelimiterWidth = 50
 const secretDelimiterChar = "-"
 
+const cardNumberMinLength = 13
+const cardNumberMaxLength = 19
+
 var supportedTypes = []string{
 	secretTypeCreds,
 	secretTypeNotes,

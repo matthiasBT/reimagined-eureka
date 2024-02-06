@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
@@ -14,7 +13,7 @@ type RevealNoteCommand struct {
 	logger         logging.ILogger
 	storage        clientEntities.IStorage
 	cryptoProvider clientEntities.ICryptoProvider
-	userID         int // TODO: check userID too!
+	userID         int
 	rowID          int
 	limit          int
 }
@@ -45,15 +44,15 @@ func (c *RevealNoteCommand) Validate(args ...string) error {
 	if len(args) < 1 || len(args) > 2 {
 		return fmt.Errorf("example: reveal-note <ID> [<output-limit>]")
 	}
-	rowID, err := strconv.Atoi(args[0])
-	if err != nil || rowID <= 0 {
-		return fmt.Errorf("value is a not a positive number")
+	rowID, err := parsePositiveInt(args[0])
+	if err != nil {
+		return err
 	}
 	limit := 0
 	if len(args) == 2 {
-		limit, err = strconv.Atoi(args[1])
-		if err != nil || limit <= 0 {
-			return fmt.Errorf("value is a not a positive number")
+		limit, err = parsePositiveInt(args[1])
+		if err != nil {
+			return err
 		}
 	}
 	c.rowID = rowID

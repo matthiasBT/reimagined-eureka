@@ -74,13 +74,19 @@ func createCommands(
 ) []entities.Command {
 	return []entities.Command{
 		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
+
 		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
+
 		cliCommands.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewAddCardCommand(logger, storage, cryptoProvider, proxy, userID),
+
 		cliCommands.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
 		cliCommands.NewRevealNoteCommand(logger, storage, cryptoProvider, userID),
+
+		cliCommands.NewRevealCardCommand(logger, storage, cryptoProvider, userID),
+
 		&cliCommands.QuitCommand{},
 	}
 }

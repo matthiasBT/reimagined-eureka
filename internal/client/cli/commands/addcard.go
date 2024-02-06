@@ -6,12 +6,24 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
 	"reimagined_eureka/internal/common"
 )
+
+const monthMin = 1
+const monthMax = 12
+const yearMin = 20
+const monthMinChars = 1
+const monthMaxChars = 1
+const yearMinChars = 1
+const yearMaxChars = 2
+const cscMinChars = 3
+const cscMaxChars = 3
+const nameMinChars = 1
 
 type AddCardCommand struct {
 	Logger         logging.ILogger
@@ -48,26 +60,34 @@ func (c *AddCardCommand) GetDescription() string {
 
 func (c *AddCardCommand) Validate(args ...string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("example: add-card <number>")
+		return fmt.Errorf("example: add-card <number> (without spaces)")
 	}
-	c.cardNumber = args[0]
+	number := args[0]
+	if !isCardNumber(number) {
+		return fmt.Errorf(
+			"not a card number. Must contain only digits and be %d-%d digits long",
+			cardNumberMinLength,
+			cardNumberMaxLength,
+		)
+	}
+	c.cardNumber = number
 	return nil
 }
 
 func (c *AddCardCommand) Execute() cliEntities.CommandResult {
-	monthRaw, err := readSecretValueMasked(c.Logger, "expiration date (month)", 1, 0)
+	monthRaw, err := readSecretValueMasked(c.Logger, "expiration date (month)", monthMinChars, monthMaxChars)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read month: %v", err).Error(),
 		}
 	}
-	yearRaw, err := readSecretValueMasked(c.Logger, "expiration date (year)", 1, 0)
+	yearRaw, err := readSecretValueMasked(c.Logger, "expiration date (year)", yearMinChars, yearMaxChars)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read year: %v", err).Error(),
 		}
 	}
-	cscRaw, err := readSecretValueMasked(c.Logger, "card security code", 1, 0)
+	cscRaw, err := readSecretValueMasked(c.Logger, "card security code", cscMinChars, cscMaxChars)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read csc: %v", err).Error(),
@@ -79,13 +99,13 @@ func (c *AddCardCommand) Execute() cliEntities.CommandResult {
 			FailureMessage: fmt.Errorf("failed to parse card data: %v", err).Error(),
 		}
 	}
-	firstName, err := readSecretValueMasked(c.Logger, "owner (first name)", 1, 0)
+	firstName, err := readSecretValueMasked(c.Logger, "owner (first name)", nameMinChars, 0)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read name: %v", err).Error(),
 		}
 	}
-	lastName, err := readSecretValueMasked(c.Logger, "owner (last name)", 1, 0)
+	lastName, err := readSecretValueMasked(c.Logger, "owner (last name)", nameMinChars, 0)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read name: %v", err).Error(),
@@ -103,6 +123,7 @@ func (c *AddCardCommand) Execute() cliEntities.CommandResult {
 		CSC:       csc,
 		FirstName: firstName,
 		LastName:  lastName,
+		Number:    c.cardNumber,
 	}
 	cardBinary, err := json.Marshal(cardData)
 	if err != nil {
@@ -148,11 +169,11 @@ func (c *AddCardCommand) Execute() cliEntities.CommandResult {
 	}
 }
 
-func parse(input string) (int, int, int, error) {
+func parse(input string) (string, string, string, error) {
 	re := regexp.MustCompile(`(?P<Month>\d{1,2})\s+(?P<Year>\d{2}|\d{4})\s+(?P<CSC>\d{3,4})`)
 	matches := re.FindStringSubmatch(input)
 	if matches == nil {
-		return 0, 0, 0, fmt.Errorf("input does not match expected format")
+		return "", "", "", fmt.Errorf("input does not match expected format")
 	}
 
 	matchMap := make(map[string]string)
@@ -163,18 +184,27 @@ func parse(input string) (int, int, int, error) {
 	}
 
 	month, err := strconv.Atoi(matchMap["Month"])
-	if err != nil {
-		return 0, 0, 0, fmt.Errorf("invalid month format")
+	if err != nil || month < monthMin || month > monthMax {
+		return "", "", "", fmt.Errorf("invalid month format")
 	}
 
 	year, err := strconv.Atoi(matchMap["Year"])
-	if err != nil {
-		return 0, 0, 0, fmt.Errorf("invalid year format")
+	if err != nil || year < yearMin {
+		return "", "", "", fmt.Errorf("invalid year format")
 	}
 
-	csc, err := strconv.Atoi(matchMap["CSC"])
+	_, err = strconv.Atoi(matchMap["CSC"])
 	if err != nil {
-		return 0, 0, 0, fmt.Errorf("invalid csc format")
+		return "", "", "", fmt.Errorf("invalid csc format")
 	}
-	return month, year, csc, nil
+	return matchMap["Month"], matchMap["Year"], matchMap["CSC"], nil
+}
+
+func isCardNumber(what string) bool {
+	for _, r := range what {
+		if !unicode.IsDigit(r) {
+			return false
+		}
+	}
+	return !(len(what) < cardNumberMinLength || len(what) > cardNumberMaxLength)
 }
