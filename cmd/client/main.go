@@ -1,6 +1,10 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"reimagined_eureka/internal/client/adapters"
 	"reimagined_eureka/internal/client/cli"
 	"reimagined_eureka/internal/client/infra/config"
@@ -28,5 +32,9 @@ func main() {
 	serverProxy := adapters.NewServerProxy(conf.ServerURL)
 	cryptoProvider := adapters.NewCryptoProvider()
 
-	cli.NewTerminal(logger, storage, serverProxy, cryptoProvider).Run()
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	go cli.NewTerminal(logger, storage, serverProxy, cryptoProvider).Run()
+	<-signals
 }
