@@ -95,7 +95,7 @@ func (c *CryptoProvider) Encrypt(what []byte) (*common.EncryptionResult, error) 
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, fmt.Errorf("GCM nonce generation failed: %v", err)
 	}
-	ciphertext := gcm.Seal(nil, nonce, what, nil) // TODO: use additional data
+	ciphertext := gcm.Seal(nil, nonce, what, nil)
 	return &common.EncryptionResult{Ciphertext: ciphertext, Salt: salt, Nonce: nonce}, nil
 }
 
@@ -109,7 +109,7 @@ func (c *CryptoProvider) Decrypt(what *common.EncryptionResult) ([]byte, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error creating AES-GCM cipher: %v", err)
 	}
-	decryptedData, err := gcm.Open(nil, what.Nonce, what.Ciphertext, nil) // TODO: use additional data
+	decryptedData, err := gcm.Open(nil, what.Nonce, what.Ciphertext, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error decrypting data: %v", err)
 	}

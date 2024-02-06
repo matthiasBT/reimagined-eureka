@@ -103,7 +103,7 @@ func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entr
 		return 0, err
 	}
 	id, _ := result.LastInsertId()
-	return int(id), nil // TODO: think about proper type conversion and type choices
+	return int(id), nil
 }
 
 func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.CredentialLocal, error) {

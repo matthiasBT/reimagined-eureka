@@ -15,7 +15,6 @@ import (
 // TODO: check on Windows too, and maybe on Linux
 
 func ReadSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize int) (string, error) {
-	// lengthHint := getLengthHint(minSize, maxSize)  // TODO: fix "Enter [secretType >=N characters] (%!s(MISSING))"
 	logger.Info("Enter %s: ", what)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
@@ -64,20 +63,6 @@ func ReadNonSecretValue(logger logging.ILogger, what string) (string, error) {
 		return "", err
 	}
 	return strings.Join(lines, "\n"), nil
-}
-
-func getLengthHint(minSize, maxSize int) string {
-	var lengthHint string
-	if minSize != 0 && maxSize != 0 {
-		lengthHint = fmt.Sprintf("%d-%d characters", minSize, maxSize)
-	} else if minSize == 0 && maxSize != 0 {
-		lengthHint = fmt.Sprintf("<=%d characters", maxSize)
-	} else if minSize != 0 && maxSize == 0 {
-		lengthHint = fmt.Sprintf(">=%d characters", minSize)
-	} else {
-		lengthHint = "any length"
-	}
-	return lengthHint
 }
 
 func TrimToNRunes(s string, n int) string {

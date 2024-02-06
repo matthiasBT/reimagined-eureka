@@ -44,7 +44,9 @@ func (c *MasterKeyCommand) Validate(args ...string) error {
 	if len(args) != 0 {
 		return fmt.Errorf("example: master-key")
 	}
-	key, err := commands.ReadSecretValueMasked(c.Logger, "master key", 0, 0) // TODO: fix 0s
+	key, err := commands.ReadSecretValueMasked(
+		c.Logger, "master key", commands.MinMasterKeyLength, commands.MaxMasterKeyLength,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}
