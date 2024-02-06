@@ -9,23 +9,24 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-type AddCredsCommand struct {
+type UpdateCredsCommand struct {
 	Logger         logging.ILogger
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
+	rowID          int
 	credsLogin     string
 }
 
-func NewAddCredsCommand(
+func NewUpdateCredsCommand(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
 	userID int,
-) *AddCredsCommand {
-	return &AddCredsCommand{
+) *UpdateCredsCommand {
+	return &UpdateCredsCommand{
 		Logger:         logger,
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
@@ -34,23 +35,35 @@ func NewAddCredsCommand(
 	}
 }
 
-func (c *AddCredsCommand) GetName() string {
-	return "add-creds"
+func (c *UpdateCredsCommand) GetName() string {
+	return "update-creds"
 }
 
-func (c *AddCredsCommand) GetDescription() string {
-	return "add a login-password pair"
+func (c *UpdateCredsCommand) GetDescription() string {
+	return "update a login-password pair"
 }
 
-func (c *AddCredsCommand) Validate(args ...string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("example: add-creds <login>")
+func (c *UpdateCredsCommand) Validate(args ...string) error {
+	if len(args) != 2 {
+		return fmt.Errorf("example: update-creds <ID> <login>")
 	}
-	c.credsLogin = args[0]
+	rowID, err := parsePositiveInt(args[0])
+	if err != nil {
+		return err
+	}
+	creds, err := c.Storage.ReadCredential(c.userID, rowID)
+	if err != nil {
+		return fmt.Errorf("failed to read creds: %v", err)
+	}
+	if creds == nil {
+		return fmt.Errorf("creds %d don't exist for this user", rowID)
+	}
+	c.rowID = rowID
+	c.credsLogin = args[1]
 	return nil
 }
 
-func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
+func (c *UpdateCredsCommand) Execute() cliEntities.CommandResult {
 	encrypted, meta, err := prepareCreds(c.Logger, c.CryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
@@ -58,13 +71,12 @@ func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	payload := common.CredentialsReq{
-		ServerID: nil,
+		ServerID: &c.rowID,
 		Login:    c.credsLogin,
 		Meta:     meta,
 		Value:    encrypted,
 	}
-	rowID, err := c.proxy.AddCredentials(&payload)
-	if err != nil {
+	if err := c.proxy.UpdateCredentials(&payload); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
@@ -78,32 +90,14 @@ func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
 			Salt:              payload.Value.Salt,
 			Nonce:             payload.Value.Nonce,
 		},
-		ServerID: rowID,
+		ServerID: c.rowID,
 	}
 	if err := c.Storage.SaveCredentials(&credsLocal); err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to store credentials locally: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to update credentials locally: %v", err).Error(),
 		}
 	}
 	return cliEntities.CommandResult{
-		SuccessMessage: "Successfully stored on server and locally",
+		SuccessMessage: "Successfully updated on server and locally",
 	}
-}
-
-func prepareCreds(
-	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider,
-) (*common.EncryptionResult, string, error) {
-	password, err := readSecretValueMasked(logger, "password", 1, 0)
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to read password: %v", err)
-	}
-	meta, err := readNonSecretValue(logger, "meta information")
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
-	}
-	encrypted, err := cryptoProvider.Encrypt([]byte(password))
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to encrypt password: %v", err)
-	}
-	return encrypted, meta, nil
 }

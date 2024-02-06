@@ -88,6 +88,20 @@ func (p *ServerProxy) UpdateNote(note *common.NoteReq) error {
 	return err
 }
 
+func (p *ServerProxy) UpdateCredentials(creds *common.CredentialsReq) error {
+	if p.sessionCookie == "" {
+		return ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathWriteCredentials,
+	}
+	payload, err := json.Marshal(creds)
+	_, err = p.addSecret(true, fullURL.String(), payload, err)
+	return err
+}
+
 func (p *ServerProxy) AddFile(file *common.FileReq) (int, error) {
 	if p.sessionCookie == "" {
 		return 0, ErrNoSessionCookie

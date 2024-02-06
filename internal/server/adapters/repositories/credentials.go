@@ -2,6 +2,9 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 
 	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
@@ -20,13 +23,40 @@ func NewCredentialsRepo(logger logging.ILogger, storage entities.Storage) *Crede
 	}
 }
 
-func (r *CredentialsRepo) Write(ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq) (int, error) {
-	r.logger.Infof("Creating new credentials for user: %d", userID)
-	return r.create(ctx, tx, userID, data)
+func (r *CredentialsRepo) Write(
+	ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq,
+) (int, error) {
+	if data.ServerID == nil {
+		r.logger.Infof("Creating new credentials for user: %d", userID)
+		return r.create(ctx, tx, userID, data)
+	}
+	r.logger.Infof("Updating credentials for user: %d", userID)
+	return *data.ServerID, r.update(ctx, tx, userID, data)
 }
 
-func (r *CredentialsRepo) Read(ctx context.Context, tx entities.Tx, userID int, rowId int) (*common.CredentialsReq, error) {
-	panic("implement me!")
+func (r *CredentialsRepo) Read(
+	ctx context.Context, tx entities.Tx, userID int, rowID int, lock bool,
+) (*common.CredentialsReq, int, error) {
+	var creds common.Credential
+	query := "select * from credentials where id = $1 and user_id = $2" // TODO: check delete flag in the future
+	if lock {
+		query = query + " for update"
+	}
+	if err := tx.GetContext(ctx, &creds, query, rowID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, fmt.Errorf("row %d doesn't exist for user", rowID)
+		}
+		return nil, 0, err
+	}
+	var result common.CredentialsReq
+	result.ServerID = &rowID
+	result.Meta = creds.Meta
+	result.Value = &common.EncryptionResult{
+		Ciphertext: creds.EncryptedPassword,
+		Salt:       creds.Salt,
+		Nonce:      creds.Nonce,
+	}
+	return &result, creds.Version, nil
 }
 
 func (r *CredentialsRepo) create(
@@ -45,14 +75,14 @@ func (r *CredentialsRepo) create(
 		return 0, err
 	}
 	r.logger.Infof("CredentialsReq created")
-	if err := r.createVersion(ctx, tx, result.ID, data); err != nil {
+	if err := r.createVersion(ctx, tx, result.ID, data, entities.DefaultVersion); err != nil {
 		return 0, err
 	}
 	return result.ID, nil
 }
 
 func (r *CredentialsRepo) createVersion(
-	ctx context.Context, tx entities.Tx, credID int, data *common.CredentialsReq,
+	ctx context.Context, tx entities.Tx, credID int, data *common.CredentialsReq, version int,
 ) error {
 	query := `
 		insert into credentials_versions(cred_id, version, meta, login, encrypted_password, salt, nonce)
@@ -62,7 +92,7 @@ func (r *CredentialsRepo) createVersion(
 		ctx,
 		query,
 		credID,
-		entities.DefaultVersion,
+		version,
 		data.Meta,
 		data.Login,
 		data.Value.Ciphertext,
@@ -76,6 +106,32 @@ func (r *CredentialsRepo) createVersion(
 	return nil
 }
 
-func (r *CredentialsRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq) (int, error) {
-	panic("Implement me!")
+func (r *CredentialsRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.CredentialsReq) error {
+	_, version, err := r.Read(ctx, tx, userID, *data.ServerID, true)
+	if err != nil {
+		return err
+	}
+	query := `
+		update credentials
+		set version = $2, meta = $3, encrypted_password = $4, salt = $5, nonce = $6, login = $7
+		where id = $1
+	`
+	if err := tx.ExecContext(
+		ctx,
+		query,
+		*data.ServerID,
+		version+1,
+		data.Meta,
+		data.Value.Ciphertext,
+		data.Value.Salt,
+		data.Value.Nonce,
+		data.Login,
+	); err != nil {
+		r.logger.Errorf("Failed to update creds: %s", err.Error())
+		return err
+	}
+	if err := r.createVersion(ctx, tx, *data.ServerID, data, version+1); err != nil {
+		return err
+	}
+	return nil
 }

@@ -109,7 +109,7 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 	w.Write(entropyData)
 }
 
-func (c *BaseController) createCredentials(w http.ResponseWriter, r *http.Request) {
+func (c *BaseController) writeCredentials(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {
 		return

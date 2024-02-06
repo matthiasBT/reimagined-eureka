@@ -131,6 +131,13 @@ func (s *SQLiteStorage) SaveCredentials(credentials *clientEntities.CredentialLo
 	query := `
 		insert into credentials(server_id, user_id, meta, login, encrypted_password, salt, nonce)
 		values ($1, $2, $3, $4, $5, $6, $7)
+		on conflict (user_id, server_id)
+		do update set
+			meta = excluded.meta,
+			encrypted_password = excluded.encrypted_password,
+			salt = excluded.salt,
+			nonce = excluded.nonce,
+		    login = excluded.login
 	`
 	_, err := s.db.Exec(
 		query,

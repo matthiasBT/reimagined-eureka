@@ -88,7 +88,7 @@ func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: c.rowID,
 	}
-	if err := c.Storage.SaveNote(&noteLocal); err != nil { // TODO: upsert
+	if err := c.Storage.SaveNote(&noteLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to update note locally: %v", err).Error(),
 		}
