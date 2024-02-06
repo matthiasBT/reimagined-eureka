@@ -17,6 +17,7 @@ type IProxy interface {
 
 	AddFile(file *common.FileReq) (int, error)
 	UpdateFile(file *common.FileReq) error
+	DeleteFile(rowID int) error
 
 	AddCard(card *common.CardReq) (int, error)
 	UpdateCard(card *common.CardReq) error

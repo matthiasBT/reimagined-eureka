@@ -92,8 +92,9 @@ func createCommands(
 		cliCommands.NewUpdateFileCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewUpdateCardCommand(logger, storage, cryptoProvider, proxy, userID),
 
-		cliCommands.NewDeleteCredsCommand(logger, storage, proxy, userID),
-		cliCommands.NewDeleteNoteCommand(logger, storage, proxy, userID),
+		cliCommands.NewDeleteCredsCommand(storage, proxy, userID),
+		cliCommands.NewDeleteNoteCommand(storage, proxy, userID),
+		cliCommands.NewDeleteFileCommand(storage, proxy, userID),
 
 		&cliCommands.QuitCommand{},
 	}

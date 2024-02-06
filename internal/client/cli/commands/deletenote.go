@@ -5,12 +5,10 @@ import (
 
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
-	"reimagined_eureka/internal/client/infra/logging"
 )
 
 type DeleteNoteCommand struct {
-	Logger      logging.ILogger
-	Storage     clientEntities.IStorage
+	storage     clientEntities.IStorage
 	proxy       clientEntities.IProxy
 	userID      int
 	rowIDServer int
@@ -18,14 +16,12 @@ type DeleteNoteCommand struct {
 }
 
 func NewDeleteNoteCommand(
-	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	proxy clientEntities.IProxy,
 	userID int,
 ) *DeleteNoteCommand {
 	return &DeleteNoteCommand{
-		Logger:  logger,
-		Storage: storage,
+		storage: storage,
 		proxy:   proxy,
 		userID:  userID,
 	}
@@ -47,7 +43,7 @@ func (c *DeleteNoteCommand) Validate(args ...string) error {
 	if err != nil {
 		return err
 	}
-	note, err := c.Storage.ReadNote(c.userID, rowID)
+	note, err := c.storage.ReadNote(c.userID, rowID)
 	if err != nil {
 		return fmt.Errorf("failed to read note: %v", err)
 	}
@@ -65,7 +61,7 @@ func (c *DeleteNoteCommand) Execute() cliEntities.CommandResult {
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
 	}
-	if err := c.Storage.DeleteNote(c.rowIDLocal); err != nil {
+	if err := c.storage.DeleteNote(c.rowIDLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to delete note locally: %v", err).Error(),
 		}

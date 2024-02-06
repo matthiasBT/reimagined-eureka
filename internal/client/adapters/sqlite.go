@@ -164,6 +164,12 @@ func (s *SQLiteStorage) DeleteNote(rowID int) error {
 	return err
 }
 
+func (s *SQLiteStorage) DeleteFile(rowID int) error {
+	query := "update files set is_deleted = true where id = $1"
+	_, err := s.db.Exec(query, rowID)
+	return err
+}
+
 func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
 	var notes []*clientEntities.NoteLocal
 	query := "select * from notes where user_id = $1 and not is_deleted"

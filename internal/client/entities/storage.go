@@ -26,6 +26,7 @@ type IStorage interface {
 	ReadFiles(userID int) ([]*FileLocal, error)
 	ReadFile(userID int, fileID int) (*FileLocal, error)
 	SaveFile(file *FileLocal) error
+	DeleteFile(rowID int) error
 
 	ReadCards(userID int) ([]*CardLocal, error)
 	ReadCard(userID int, cardID int) (*CardLocal, error)
