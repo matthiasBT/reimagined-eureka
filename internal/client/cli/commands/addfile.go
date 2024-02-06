@@ -46,7 +46,7 @@ func (c *AddFileCommand) GetDescription() string {
 
 func (c *AddFileCommand) Validate(args ...string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("example: add-file <path>")
+		return fmt.Errorf("example: add-file <savePath>")
 	}
 	c.filePath = args[0]
 	return nil

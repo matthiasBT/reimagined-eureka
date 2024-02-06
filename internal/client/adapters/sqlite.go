@@ -192,6 +192,18 @@ func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.FileLocal, erro
 	return files, nil
 }
 
+func (s *SQLiteStorage) ReadFile(userID int, fileID int) (*clientEntities.FileLocal, error) {
+	var file clientEntities.FileLocal
+	query := "select * from files where user_id = $1 and id = $2"
+	if err := s.db.Get(&file, query, userID, fileID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &file, nil
+}
+
 func (s *SQLiteStorage) SaveFile(file *clientEntities.FileLocal) error {
 	query := `
 		insert into files(server_id, user_id, meta, encrypted_content, salt, nonce)

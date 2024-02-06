@@ -84,7 +84,7 @@ func createCommands(
 
 		cliCommands.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
 		cliCommands.NewRevealNoteCommand(logger, storage, cryptoProvider, userID),
-
+		cliCommands.NewRevealFileCommand(logger, storage, cryptoProvider, userID),
 		cliCommands.NewRevealCardCommand(logger, storage, cryptoProvider, userID),
 
 		&cliCommands.QuitCommand{},

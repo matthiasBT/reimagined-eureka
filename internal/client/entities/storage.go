@@ -22,6 +22,7 @@ type IStorage interface {
 	SaveNote(note *NoteLocal) error
 
 	ReadFiles(userID int) ([]*FileLocal, error)
+	ReadFile(userID int, fileID int) (*FileLocal, error)
 	SaveFile(file *FileLocal) error
 
 	ReadCards(userID int) ([]*CardLocal, error)
