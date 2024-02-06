@@ -29,6 +29,7 @@ type Credential struct {
 	EncryptedPassword []byte `db:"encrypted_password"`
 	Salt              []byte `db:"salt"`
 	Nonce             []byte `db:"nonce"`
+	Version           int    `db:"version"`
 }
 
 type NoteReq struct {
@@ -44,6 +45,7 @@ type Note struct {
 	EncryptedContent []byte `db:"encrypted_content"`
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
+	Version          int    `db:"version"`
 }
 
 type FileReq struct {
@@ -59,6 +61,7 @@ type File struct {
 	EncryptedContent []byte `db:"encrypted_content"`
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
+	Version          int    `db:"version"`
 }
 
 type CardReq struct {
@@ -74,4 +77,5 @@ type Card struct {
 	EncryptedContent []byte `db:"encrypted_content"`
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
+	Version          int    `db:"version"`
 }

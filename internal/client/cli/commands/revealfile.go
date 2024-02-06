@@ -65,7 +65,7 @@ func (c *RevealFileCommand) Execute() cliEntities.CommandResult {
 	}
 	if file == nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("file with ID %d doesn't exist for this user", c.rowID).Error(),
+			FailureMessage: fmt.Errorf("file %d doesn't exist for this user", c.rowID).Error(),
 		}
 	}
 	encrypted := common.EncryptionResult{

@@ -2,6 +2,9 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 
 	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
@@ -21,12 +24,37 @@ func NewNotesRepo(logger logging.ILogger, storage entities.Storage) *NotesRepo {
 }
 
 func (r *NotesRepo) Write(ctx context.Context, tx entities.Tx, userID int, data *common.NoteReq) (int, error) {
-	r.logger.Infof("Creating new note for user: %d", userID)
-	return r.create(ctx, tx, userID, data)
+	if data.ServerID == nil {
+		r.logger.Infof("Creating new note for user: %d", userID)
+		return r.create(ctx, tx, userID, data)
+	}
+	r.logger.Infof("Updating note %d for user: %d", data.ServerID, userID)
+	return *data.ServerID, r.update(ctx, tx, userID, data)
 }
 
-func (r *NotesRepo) Read(ctx context.Context, tx entities.Tx, userID int, rowId int) (*common.NoteReq, error) {
-	panic("implement me!")
+func (r *NotesRepo) Read(
+	ctx context.Context, tx entities.Tx, userID int, rowID int, lock bool,
+) (*common.NoteReq, int, error) {
+	var note common.Note
+	query := "select * from notes where id = $1 and user_id = $2" // TODO: check delete flag in the future
+	if lock {
+		query = query + " for update"
+	}
+	if err := tx.GetContext(ctx, &note, query, rowID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, fmt.Errorf("row %d doesn't exist for user", rowID)
+		}
+		return nil, 0, err
+	}
+	var result common.NoteReq
+	result.ServerID = &rowID
+	result.Meta = note.Meta
+	result.Value = &common.EncryptionResult{
+		Ciphertext: note.EncryptedContent,
+		Salt:       note.Salt,
+		Nonce:      note.Nonce,
+	}
+	return &result, note.Version, nil
 }
 
 func (r *NotesRepo) create(
@@ -45,14 +73,14 @@ func (r *NotesRepo) create(
 		return 0, err
 	}
 	r.logger.Infof("Note created")
-	if err := r.createVersion(ctx, tx, result.ID, data); err != nil {
+	if err := r.createVersion(ctx, tx, result.ID, data, entities.DefaultVersion); err != nil {
 		return 0, err
 	}
 	return result.ID, nil
 }
 
 func (r *NotesRepo) createVersion(
-	ctx context.Context, tx entities.Tx, noteID int, data *common.NoteReq,
+	ctx context.Context, tx entities.Tx, noteID int, data *common.NoteReq, version int,
 ) error {
 	query := `
 		insert into notes_versions(note_id, version, meta, encrypted_content, salt, nonce)
@@ -62,7 +90,7 @@ func (r *NotesRepo) createVersion(
 		ctx,
 		query,
 		noteID,
-		entities.DefaultVersion,
+		version,
 		data.Meta,
 		data.Value.Ciphertext,
 		data.Value.Salt,
@@ -75,6 +103,31 @@ func (r *NotesRepo) createVersion(
 	return nil
 }
 
-func (r *NotesRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.NoteReq) (int, error) {
-	panic("Implement me!")
+func (r *NotesRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.NoteReq) error {
+	_, version, err := r.Read(ctx, tx, userID, *data.ServerID, true)
+	if err != nil {
+		return err
+	}
+	query := `
+		update notes
+		set version = $2, meta = $3, encrypted_content = $4, salt = $5, nonce = $6
+		where id = $1
+	`
+	if err := tx.ExecContext(
+		ctx,
+		query,
+		*data.ServerID,
+		version+1,
+		data.Meta,
+		data.Value.Ciphertext,
+		data.Value.Salt,
+		data.Value.Nonce,
+	); err != nil {
+		r.logger.Errorf("Failed to update note: %s", err.Error())
+		return err
+	}
+	if err := r.createVersion(ctx, tx, *data.ServerID, data, version+1); err != nil {
+		return err
+	}
+	return nil
 }

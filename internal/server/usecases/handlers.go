@@ -131,7 +131,7 @@ func (c *BaseController) createCredentials(w http.ResponseWriter, r *http.Reques
 	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
-func (c *BaseController) createNote(w http.ResponseWriter, r *http.Request) {
+func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {
 		return

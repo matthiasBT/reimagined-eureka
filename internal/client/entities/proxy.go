@@ -8,6 +8,7 @@ type IProxy interface {
 	SetSessionCookie(cookie string)
 	AddCredentials(creds *common.CredentialsReq) (int, error)
 	AddNote(note *common.NoteReq) (int, error)
+	UpdateNote(note *common.NoteReq) error
 	AddFile(file *common.FileReq) (int, error)
 	AddCard(card *common.CardReq) (int, error)
 }

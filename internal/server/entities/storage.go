@@ -43,7 +43,7 @@ type CredentialsRepo interface {
 
 type NotesRepo interface {
 	Write(ctx context.Context, tx Tx, userID int, data *common.NoteReq) (int, error)
-	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.NoteReq, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int, lock bool) (*common.NoteReq, int, error)
 	// ReadVersion
 }
 

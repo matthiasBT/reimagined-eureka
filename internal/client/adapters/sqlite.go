@@ -170,6 +170,12 @@ func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
 	query := `
 		insert into notes(server_id, user_id, meta, encrypted_content, salt, nonce)
 		values ($1, $2, $3, $4, $5, $6)
+		on conflict (user_id, server_id)
+		do update set
+			meta = excluded.meta,
+			encrypted_content = excluded.encrypted_content,
+			salt = excluded.salt,
+			nonce = excluded.nonce
 	`
 	_, err := s.db.Exec(
 		query,

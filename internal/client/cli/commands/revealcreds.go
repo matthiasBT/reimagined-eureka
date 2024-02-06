@@ -60,7 +60,7 @@ func (c *RevealCredsCommand) Execute() cliEntities.CommandResult {
 	}
 	if cred == nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("credentials with ID %d don't exist for this user", c.rowID).Error(),
+			FailureMessage: fmt.Errorf("credentials %d don't exist for this user", c.rowID).Error(),
 		}
 	}
 	encrypted := common.EncryptionResult{

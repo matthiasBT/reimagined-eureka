@@ -7,7 +7,8 @@ CREATE TABLE credentials (
     login TEXT NOT NULL,
     encrypted_password BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
-    salt BYTEA NOT NULL
+    salt BYTEA NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE credentials_versions (
     id SERIAL PRIMARY KEY,
@@ -27,7 +28,8 @@ CREATE TABLE notes (
     meta TEXT NOT NULL,
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
-    salt BYTEA NOT NULL
+    salt BYTEA NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE notes_versions (
     id SERIAL PRIMARY KEY,
@@ -46,7 +48,8 @@ CREATE TABLE files (
     meta TEXT NOT NULL,
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
-    salt BYTEA NOT NULL
+    salt BYTEA NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE files_versions (
     id SERIAL PRIMARY KEY,
@@ -65,7 +68,8 @@ CREATE TABLE cards (
     meta TEXT NOT NULL,
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
-    salt BYTEA NOT NULL
+    salt BYTEA NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE cards_versions (
     id SERIAL PRIMARY KEY,

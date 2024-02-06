@@ -9,22 +9,23 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-type AddNoteCommand struct {
+type UpdateNoteCommand struct {
 	Logger         logging.ILogger
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
+	rowID          int
 }
 
-func NewAddNoteCommand(
+func NewUpdateNoteCommand(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
 	userID int,
-) *AddNoteCommand {
-	return &AddNoteCommand{
+) *UpdateNoteCommand {
+	return &UpdateNoteCommand{
 		Logger:         logger,
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
@@ -33,22 +34,34 @@ func NewAddNoteCommand(
 	}
 }
 
-func (c *AddNoteCommand) GetName() string {
-	return "add-note"
+func (c *UpdateNoteCommand) GetName() string {
+	return "update-note"
 }
 
-func (c *AddNoteCommand) GetDescription() string {
-	return "add a text note"
+func (c *UpdateNoteCommand) GetDescription() string {
+	return "update a text note"
 }
 
-func (c *AddNoteCommand) Validate(args ...string) error {
-	if len(args) != 0 {
-		return fmt.Errorf("example: add-note")
+func (c *UpdateNoteCommand) Validate(args ...string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("example: update-note <ID>")
 	}
+	rowID, err := parsePositiveInt(args[0])
+	if err != nil {
+		return err
+	}
+	note, err := c.Storage.ReadNote(c.userID, rowID)
+	if err != nil {
+		return fmt.Errorf("failed to read note: %v", err)
+	}
+	if note == nil {
+		return fmt.Errorf("note %d doesn't exist for this user", rowID)
+	}
+	c.rowID = rowID
 	return nil
 }
 
-func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
+func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
 	encrypted, meta, err := prepareNote(c.Logger, c.CryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
@@ -56,12 +69,11 @@ func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	payload := common.NoteReq{
-		ServerID: nil,
+		ServerID: &c.rowID,
 		Meta:     meta,
 		Value:    encrypted,
 	}
-	rowID, err := c.proxy.AddNote(&payload)
-	if err != nil {
+	if err := c.proxy.UpdateNote(&payload); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
@@ -74,32 +86,14 @@ func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
 			Salt:             payload.Value.Salt,
 			Nonce:            payload.Value.Nonce,
 		},
-		ServerID: rowID,
+		ServerID: c.rowID,
 	}
-	if err := c.Storage.SaveNote(&noteLocal); err != nil {
+	if err := c.Storage.SaveNote(&noteLocal); err != nil { // TODO: upsert
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to store note locally: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to update note locally: %v", err).Error(),
 		}
 	}
 	return cliEntities.CommandResult{
-		SuccessMessage: "Successfully stored on server and locally",
+		SuccessMessage: "Successfully updated on server and locally",
 	}
-}
-
-func prepareNote(
-	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider,
-) (*common.EncryptionResult, string, error) {
-	content, err := readNonSecretValue(logger, "note content") // don't replace with '*' because it's multiline
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to read note content: %v", err)
-	}
-	meta, err := readNonSecretValue(logger, "meta information")
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
-	}
-	encrypted, err := cryptoProvider.Encrypt([]byte(content))
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to encrypt note content: %v", err)
-	}
-	return encrypted, meta, nil
 }

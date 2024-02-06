@@ -69,7 +69,7 @@ func (c *RevealNoteCommand) Execute() cliEntities.CommandResult {
 	}
 	if note == nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("note with ID %d doesn't exist for this user", c.rowID).Error(),
+			FailureMessage: fmt.Errorf("note %d doesn't exist for this user", c.rowID).Error(),
 		}
 	}
 	encrypted := common.EncryptionResult{
