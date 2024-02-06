@@ -12,8 +12,16 @@ import (
 	"reimagined_eureka/internal/client/infra/logging"
 )
 
+var (
+	buildVersion string
+	buildDate    string
+)
+
 func main() {
 	logger := logging.SetupLogger()
+
+	logger.Successln("Build version: %s", buildVersion)
+	logger.Successln("Build date: %s", buildDate)
 
 	conf, err := config.InitConfig()
 	if err != nil {
