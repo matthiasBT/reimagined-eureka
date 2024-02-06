@@ -1,10 +1,11 @@
-package commands
+package reveal
 
 import (
 	"bufio"
 	"fmt"
 	"os"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -47,7 +48,7 @@ func (c *RevealFileCommand) Validate(args ...string) error {
 	if len(args) != 2 {
 		return fmt.Errorf("example: reveal-file <ID> <local path>")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}

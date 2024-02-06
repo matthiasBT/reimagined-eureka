@@ -1,8 +1,9 @@
-package commands
+package auth
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -46,17 +47,17 @@ func (c *RegisterCommand) Validate(args ...string) error {
 	if len(login) < common.MinLoginLength {
 		return fmt.Errorf("login is shorter than %d characters", common.MinLoginLength)
 	}
-	password, err := readSecretValueMasked(c.Logger, "user password", common.MinPasswordLength, 0)
+	password, err := commands.ReadSecretValueMasked(c.Logger, "user password", common.MinPasswordLength, 0)
 	if err != nil {
 		return fmt.Errorf("failed to read user password: %v", err)
 	}
-	masterKey, err := readSecretValueMasked(c.Logger, "master key", minMasterKeyLength, maxMasterKeyLength)
+	masterKey, err := commands.ReadSecretValueMasked(c.Logger, "master key", commands.MinMasterKeyLength, commands.MaxMasterKeyLength)
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}
 	c.Logger.Warningln("Now, it's time to create some random text that'll be used for master key verification")
 	c.Logger.Warningln("You don't need to remember or store this text. Think of it as of entropy")
-	entropy, err := readSecretValueMasked(c.Logger, "entropy", minEntropyLength, maxEntropyLength)
+	entropy, err := commands.ReadSecretValueMasked(c.Logger, "entropy", commands.MinEntropyLength, commands.MaxEntropyLength)
 	if err != nil {
 		return fmt.Errorf("failed to read entropy: %v", err)
 	}

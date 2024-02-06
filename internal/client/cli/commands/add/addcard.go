@@ -1,4 +1,4 @@
-package commands
+package add
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -52,11 +53,11 @@ func (c *AddCardCommand) Validate(args ...string) error {
 		return fmt.Errorf("example: add-card <number> (without spaces)")
 	}
 	number := args[0]
-	if !isCardNumber(number) {
+	if !IsCardNumber(number) {
 		return fmt.Errorf(
 			"not a card number. Must contain only digits and be %d-%d digits long",
-			cardNumberMinLength,
-			cardNumberMaxLength,
+			commands.CardNumberMinLength,
+			commands.CardNumberMaxLength,
 		)
 	}
 	c.cardNumber = number
@@ -64,7 +65,7 @@ func (c *AddCardCommand) Validate(args ...string) error {
 }
 
 func (c *AddCardCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareCard(c.Logger, c.CryptoProvider, c.cardNumber)
+	encrypted, meta, err := PrepareCard(c.Logger, c.CryptoProvider, c.cardNumber)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -116,12 +117,12 @@ func parse(input string) (string, string, string, error) {
 	}
 
 	month, err := strconv.Atoi(matchMap["Month"])
-	if err != nil || month < monthMin || month > monthMax {
+	if err != nil || month < commands.MonthMin || month > commands.MonthMax {
 		return "", "", "", fmt.Errorf("invalid month format")
 	}
 
 	year, err := strconv.Atoi(matchMap["Year"])
-	if err != nil || year < yearMin {
+	if err != nil || year < commands.YearMin {
 		return "", "", "", fmt.Errorf("invalid year format")
 	}
 
@@ -132,27 +133,27 @@ func parse(input string) (string, string, string, error) {
 	return matchMap["Month"], matchMap["Year"], matchMap["CSC"], nil
 }
 
-func isCardNumber(what string) bool {
+func IsCardNumber(what string) bool {
 	for _, r := range what {
 		if !unicode.IsDigit(r) {
 			return false
 		}
 	}
-	return !(len(what) < cardNumberMinLength || len(what) > cardNumberMaxLength)
+	return !(len(what) < commands.CardNumberMinLength || len(what) > commands.CardNumberMaxLength)
 }
 
-func prepareCard(
+func PrepareCard(
 	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider, cardNumber string,
 ) (*common.EncryptionResult, string, error) {
-	monthRaw, err := readSecretValueMasked(logger, "expiration date (month)", monthMinChars, monthMaxChars)
+	monthRaw, err := commands.ReadSecretValueMasked(logger, "expiration date (month)", commands.MonthMinChars, commands.MonthMaxChars)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read month: %v", err)
 	}
-	yearRaw, err := readSecretValueMasked(logger, "expiration date (year)", yearMinChars, yearMaxChars)
+	yearRaw, err := commands.ReadSecretValueMasked(logger, "expiration date (year)", commands.YearMinChars, commands.YearMaxChars)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read year: %v", err)
 	}
-	cscRaw, err := readSecretValueMasked(logger, "card security code", cscMinChars, cscMaxChars)
+	cscRaw, err := commands.ReadSecretValueMasked(logger, "card security code", commands.CSCMinChars, commands.CSCMaxChars)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read csc: %v", err)
 	}
@@ -160,15 +161,15 @@ func prepareCard(
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to parse card data: %v", err)
 	}
-	firstName, err := readSecretValueMasked(logger, "owner (first name)", nameMinChars, 0)
+	firstName, err := commands.ReadSecretValueMasked(logger, "owner (first name)", commands.NameMinChars, 0)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read name: %v", err)
 	}
-	lastName, err := readSecretValueMasked(logger, "owner (last name)", nameMinChars, 0)
+	lastName, err := commands.ReadSecretValueMasked(logger, "owner (last name)", commands.NameMinChars, 0)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read name: %v", err)
 	}
-	meta, err := readNonSecretValue(logger, "meta information")
+	meta, err := commands.ReadNonSecretValue(logger, "meta information")
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
 	}

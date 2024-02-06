@@ -1,8 +1,9 @@
-package commands
+package auth
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -43,7 +44,7 @@ func (c *MasterKeyCommand) Validate(args ...string) error {
 	if len(args) != 0 {
 		return fmt.Errorf("example: master-key")
 	}
-	key, err := readSecretValueMasked(c.Logger, "master key", 0, 0) // TODO: fix 0s
+	key, err := commands.ReadSecretValueMasked(c.Logger, "master key", 0, 0) // TODO: fix 0s
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}

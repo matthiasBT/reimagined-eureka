@@ -2,6 +2,7 @@ package states
 
 import (
 	cliCommands "reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/commands/auth"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -22,13 +23,13 @@ func NewInitialState(
 	cryptoProvider clientEntities.ICryptoProvider,
 ) *InitialState {
 	cmds := []cliEntities.Command{
-		&cliCommands.LoginCommand{
+		&auth.LoginCommand{
 			Logger:         logger,
 			Storage:        storage,
 			Proxy:          proxy,
 			CryptoProvider: cryptoProvider,
 		},
-		cliCommands.NewRegisterCommand(logger, storage, proxy, cryptoProvider),
+		auth.NewRegisterCommand(logger, storage, proxy, cryptoProvider),
 		&cliCommands.QuitCommand{},
 	}
 	return &InitialState{

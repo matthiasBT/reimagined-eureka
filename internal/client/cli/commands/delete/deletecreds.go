@@ -1,8 +1,9 @@
-package commands
+package delete
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 )
@@ -39,7 +40,7 @@ func (c *DeleteCredsCommand) Validate(args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("example: delete-creds <ID>")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}

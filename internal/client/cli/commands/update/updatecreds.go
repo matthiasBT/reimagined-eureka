@@ -1,8 +1,10 @@
-package commands
+package update
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/commands/add"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -48,7 +50,7 @@ func (c *UpdateCredsCommand) Validate(args ...string) error {
 	if len(args) != 2 {
 		return fmt.Errorf("example: update-creds <ID> <login>")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}
@@ -66,7 +68,7 @@ func (c *UpdateCredsCommand) Validate(args ...string) error {
 }
 
 func (c *UpdateCredsCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareCreds(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := add.PrepareCreds(c.Logger, c.CryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),

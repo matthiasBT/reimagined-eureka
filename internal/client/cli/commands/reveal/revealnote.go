@@ -1,8 +1,9 @@
-package commands
+package reveal
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -44,13 +45,13 @@ func (c *RevealNoteCommand) Validate(args ...string) error {
 	if len(args) < 1 || len(args) > 2 {
 		return fmt.Errorf("example: reveal-note <ID> [<output-limit>]")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}
 	limit := 0
 	if len(args) == 2 {
-		limit, err = parsePositiveInt(args[1])
+		limit, err = commands.ParsePositiveInt(args[1])
 		if err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func (c *RevealNoteCommand) Execute() cliEntities.CommandResult {
 	c.logger.Warningln("Note:")
 	text := string(notePlain)
 	if c.limit != 0 {
-		text = trimToNRunes(text, c.limit)
+		text = commands.TrimToNRunes(text, c.limit)
 	}
 	c.logger.Warningln(text)
 	return cliEntities.CommandResult{}

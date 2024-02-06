@@ -1,10 +1,11 @@
-package commands
+package add
 
 import (
 	"fmt"
 	"io"
 	"os"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -53,7 +54,7 @@ func (c *AddFileCommand) Validate(args ...string) error {
 }
 
 func (c *AddFileCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareFile(c.Logger, c.CryptoProvider, c.filePath)
+	encrypted, meta, err := PrepareFile(c.Logger, c.CryptoProvider, c.filePath)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -103,10 +104,10 @@ func readFile(filepath string) ([]byte, error) {
 	return data, nil
 }
 
-func prepareFile(
+func PrepareFile(
 	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider, filePath string,
 ) (*common.EncryptionResult, string, error) {
-	meta, err := readNonSecretValue(logger, "meta information")
+	meta, err := commands.ReadNonSecretValue(logger, "meta information")
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
 	}

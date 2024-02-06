@@ -1,8 +1,9 @@
-package commands
+package add
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -51,7 +52,7 @@ func (c *AddCredsCommand) Validate(args ...string) error {
 }
 
 func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareCreds(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := PrepareCreds(c.Logger, c.CryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -90,14 +91,14 @@ func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
 	}
 }
 
-func prepareCreds(
+func PrepareCreds(
 	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider,
 ) (*common.EncryptionResult, string, error) {
-	password, err := readSecretValueMasked(logger, "password", 1, 0)
+	password, err := commands.ReadSecretValueMasked(logger, "password", 1, 0)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read password: %v", err)
 	}
-	meta, err := readNonSecretValue(logger, "meta information")
+	meta, err := commands.ReadNonSecretValue(logger, "meta information")
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
 	}

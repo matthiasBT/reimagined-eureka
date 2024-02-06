@@ -14,7 +14,7 @@ import (
 
 // TODO: check on Windows too, and maybe on Linux
 
-func readSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize int) (string, error) {
+func ReadSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize int) (string, error) {
 	// lengthHint := getLengthHint(minSize, maxSize)  // TODO: fix "Enter [secretType >=N characters] (%!s(MISSING))"
 	logger.Info("Enter %s: ", what)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -52,7 +52,7 @@ func readSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize
 	}
 }
 
-func readNonSecretValue(logger logging.ILogger, what string) (string, error) {
+func ReadNonSecretValue(logger logging.ILogger, what string) (string, error) {
 	logger.Info("Enter %s: ", what)
 	scanner := bufio.NewScanner(os.Stdin)
 	var lines []string
@@ -80,7 +80,7 @@ func getLengthHint(minSize, maxSize int) string {
 	return lengthHint
 }
 
-func trimToNRunes(s string, n int) string {
+func TrimToNRunes(s string, n int) string {
 	runeCount := 0
 	for i := range s {
 		if runeCount == n {
@@ -91,7 +91,7 @@ func trimToNRunes(s string, n int) string {
 	return s
 }
 
-func parsePositiveInt(what string) (int, error) {
+func ParsePositiveInt(what string) (int, error) {
 	rowID, err := strconv.Atoi(what)
 	if err != nil || rowID <= 0 {
 		return 0, fmt.Errorf("value is a not a positive number")

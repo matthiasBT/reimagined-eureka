@@ -1,8 +1,9 @@
-package commands
+package reveal
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -43,7 +44,7 @@ func (c *RevealCredsCommand) Validate(args ...string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("example: reveal-creds <ID>")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}

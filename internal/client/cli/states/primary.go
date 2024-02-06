@@ -2,6 +2,10 @@ package states
 
 import (
 	cliCommands "reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/commands/add"
+	delete2 "reimagined_eureka/internal/client/cli/commands/delete"
+	"reimagined_eureka/internal/client/cli/commands/reveal"
+	"reimagined_eureka/internal/client/cli/commands/update"
 	"reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -77,24 +81,24 @@ func createCommands(
 
 		cliCommands.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
 
-		cliCommands.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, userID),
-		cliCommands.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, userID),
-		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, userID),
-		cliCommands.NewAddCardCommand(logger, storage, cryptoProvider, proxy, userID),
+		add.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, userID),
+		add.NewAddNoteCommand(logger, storage, cryptoProvider, proxy, userID),
+		add.NewAddFileCommand(logger, storage, cryptoProvider, proxy, userID),
+		add.NewAddCardCommand(logger, storage, cryptoProvider, proxy, userID),
 
-		cliCommands.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
-		cliCommands.NewRevealNoteCommand(logger, storage, cryptoProvider, userID),
-		cliCommands.NewRevealFileCommand(logger, storage, cryptoProvider, userID),
-		cliCommands.NewRevealCardCommand(logger, storage, cryptoProvider, userID),
+		reveal.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
+		reveal.NewRevealNoteCommand(logger, storage, cryptoProvider, userID),
+		reveal.NewRevealFileCommand(logger, storage, cryptoProvider, userID),
+		reveal.NewRevealCardCommand(logger, storage, cryptoProvider, userID),
 
-		cliCommands.NewUpdateCredsCommand(logger, storage, cryptoProvider, proxy, userID),
-		cliCommands.NewUpdateNoteCommand(logger, storage, cryptoProvider, proxy, userID),
-		cliCommands.NewUpdateFileCommand(logger, storage, cryptoProvider, proxy, userID),
-		cliCommands.NewUpdateCardCommand(logger, storage, cryptoProvider, proxy, userID),
+		update.NewUpdateCredsCommand(logger, storage, cryptoProvider, proxy, userID),
+		update.NewUpdateNoteCommand(logger, storage, cryptoProvider, proxy, userID),
+		update.NewUpdateFileCommand(logger, storage, cryptoProvider, proxy, userID),
+		update.NewUpdateCardCommand(logger, storage, cryptoProvider, proxy, userID),
 
-		cliCommands.NewDeleteCredsCommand(storage, proxy, userID),
-		cliCommands.NewDeleteNoteCommand(storage, proxy, userID),
-		cliCommands.NewDeleteFileCommand(storage, proxy, userID),
+		delete2.NewDeleteCredsCommand(storage, proxy, userID),
+		delete2.NewDeleteNoteCommand(storage, proxy, userID),
+		delete2.NewDeleteFileCommand(storage, proxy, userID),
 
 		&cliCommands.QuitCommand{},
 	}

@@ -1,8 +1,9 @@
-package commands
+package add
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -49,7 +50,7 @@ func (c *AddNoteCommand) Validate(args ...string) error {
 }
 
 func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareNote(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := PrepareNote(c.Logger, c.CryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -86,14 +87,14 @@ func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
 	}
 }
 
-func prepareNote(
+func PrepareNote(
 	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider,
 ) (*common.EncryptionResult, string, error) {
-	content, err := readNonSecretValue(logger, "note content") // don't replace with '*' because it's multiline
+	content, err := commands.ReadNonSecretValue(logger, "note content") // don't replace with '*' because it's multiline
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read note content: %v", err)
 	}
-	meta, err := readNonSecretValue(logger, "meta information")
+	meta, err := commands.ReadNonSecretValue(logger, "meta information")
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
 	}

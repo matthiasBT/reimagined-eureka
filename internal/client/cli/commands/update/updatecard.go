@@ -1,8 +1,10 @@
-package commands
+package update
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/commands/add"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -48,7 +50,7 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 	if len(args) != 2 {
 		return fmt.Errorf("example: update-card <ID> <number> (without spaces)")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}
@@ -60,11 +62,11 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 		return fmt.Errorf("card %d doesn't exist", rowID)
 	}
 	number := args[1]
-	if !isCardNumber(number) {
+	if !add.IsCardNumber(number) {
 		return fmt.Errorf(
 			"not a card number. Must contain only digits and be %d-%d digits long",
-			cardNumberMinLength,
-			cardNumberMaxLength,
+			commands.CardNumberMinLength,
+			commands.CardNumberMaxLength,
 		)
 	}
 	c.rowIDServer = card.ServerID
@@ -74,7 +76,7 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 }
 
 func (c *UpdateCardCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareCard(c.Logger, c.CryptoProvider, c.cardNumber)
+	encrypted, meta, err := add.PrepareCard(c.Logger, c.CryptoProvider, c.cardNumber)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),

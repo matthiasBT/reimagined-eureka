@@ -1,32 +1,35 @@
-package commands
+package update
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/commands/add"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
 	"reimagined_eureka/internal/common"
 )
 
-type UpdateNoteCommand struct {
+type UpdateFileCommand struct {
 	Logger         logging.ILogger
 	Storage        clientEntities.IStorage
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
+	filePath       string
 	rowIDServer    int
 	rowIDLocal     int
 }
 
-func NewUpdateNoteCommand(
+func NewUpdateFileCommand(
 	logger logging.ILogger,
 	storage clientEntities.IStorage,
 	cryptoProvider clientEntities.ICryptoProvider,
 	proxy clientEntities.IProxy,
 	userID int,
-) *UpdateNoteCommand {
-	return &UpdateNoteCommand{
+) *UpdateFileCommand {
+	return &UpdateFileCommand{
 		Logger:         logger,
 		Storage:        storage,
 		CryptoProvider: cryptoProvider,
@@ -35,53 +38,54 @@ func NewUpdateNoteCommand(
 	}
 }
 
-func (c *UpdateNoteCommand) GetName() string {
-	return "update-note"
+func (c *UpdateFileCommand) GetName() string {
+	return "update-file"
 }
 
-func (c *UpdateNoteCommand) GetDescription() string {
-	return "update a text note"
+func (c *UpdateFileCommand) GetDescription() string {
+	return "update binary file contents"
 }
 
-func (c *UpdateNoteCommand) Validate(args ...string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("example: update-note <ID>")
+func (c *UpdateFileCommand) Validate(args ...string) error {
+	if len(args) != 2 {
+		return fmt.Errorf("example: update-file <ID> <path>")
 	}
-	rowID, err := parsePositiveInt(args[0])
+	rowID, err := commands.ParsePositiveInt(args[0])
 	if err != nil {
 		return err
 	}
-	note, err := c.Storage.ReadNote(c.userID, rowID)
+	file, err := c.Storage.ReadFile(c.userID, rowID)
 	if err != nil {
-		return fmt.Errorf("failed to read note: %v", err)
+		return fmt.Errorf("failed to read file: %v", err)
 	}
-	if note == nil {
-		return fmt.Errorf("note %d doesn't exist", rowID)
+	if file == nil {
+		return fmt.Errorf("file %d doesn't exist", rowID)
 	}
-	c.rowIDServer = note.ServerID
-	c.rowIDLocal = note.ServerID
+	c.rowIDServer = file.ServerID
+	c.rowIDLocal = file.ID
+	c.filePath = args[1]
 	return nil
 }
 
-func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := prepareNote(c.Logger, c.CryptoProvider)
+func (c *UpdateFileCommand) Execute() cliEntities.CommandResult {
+	encrypted, meta, err := add.PrepareFile(c.Logger, c.CryptoProvider, c.filePath)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
 		}
 	}
-	payload := common.NoteReq{
+	payload := common.FileReq{
 		ServerID: &c.rowIDServer,
 		Meta:     meta,
 		Value:    encrypted,
 	}
-	if err := c.proxy.UpdateNote(&payload); err != nil {
+	if err := c.proxy.UpdateFile(&payload); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
 	}
-	noteLocal := clientEntities.NoteLocal{
-		Note: common.Note{
+	fileLocal := clientEntities.FileLocal{
+		File: common.File{
 			UserID:           c.userID,
 			Meta:             payload.Meta,
 			EncryptedContent: payload.Value.Ciphertext,
@@ -90,9 +94,9 @@ func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: c.rowIDServer,
 	}
-	if err := c.Storage.SaveNote(&noteLocal); err != nil {
+	if err := c.Storage.SaveFile(&fileLocal); err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to update note locally: %v", err).Error(),
+			FailureMessage: fmt.Errorf("failed to update file data locally: %v", err).Error(),
 		}
 	}
 	return cliEntities.CommandResult{

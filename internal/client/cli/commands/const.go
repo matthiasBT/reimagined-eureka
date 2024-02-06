@@ -2,10 +2,10 @@ package commands
 
 import "strings"
 
-const minMasterKeyLength = 8
-const maxMasterKeyLength = 16
-const minEntropyLength = 16
-const maxEntropyLength = 32
+const MinMasterKeyLength = 8
+const MaxMasterKeyLength = 16
+const MinEntropyLength = 16
+const MaxEntropyLength = 32
 
 const secretTypeCreds = "creds"
 const secretTypeNotes = "notes"
@@ -16,19 +16,19 @@ const secretTypeAll = "all"
 const secretDelimiterWidth = 50
 const secretDelimiterChar = "-"
 
-const cardNumberMinLength = 13
-const cardNumberMaxLength = 19
+const CardNumberMinLength = 13
+const CardNumberMaxLength = 19
 
-const monthMin = 1
-const monthMax = 12
-const yearMin = 20
-const monthMinChars = 1
-const monthMaxChars = 2
-const yearMinChars = 2
-const yearMaxChars = 2
-const cscMinChars = 3
-const cscMaxChars = 3
-const nameMinChars = 1
+const MonthMin = 1
+const MonthMax = 12
+const YearMin = 20
+const MonthMinChars = 1
+const MonthMaxChars = 2
+const YearMinChars = 2
+const YearMaxChars = 2
+const CSCMinChars = 3
+const CSCMaxChars = 3
+const NameMinChars = 1
 
 var supportedTypes = []string{
 	secretTypeCreds,

@@ -1,8 +1,9 @@
-package commands
+package auth
 
 import (
 	"fmt"
 
+	"reimagined_eureka/internal/client/cli/commands"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -33,7 +34,7 @@ func (c *LoginCommand) Validate(args ...string) error {
 	if len(login) < common.MinLoginLength {
 		return fmt.Errorf("login is shorter than %d characters", common.MinLoginLength)
 	}
-	password, err := readSecretValueMasked(c.Logger, "user password", common.MinPasswordLength, 0)
+	password, err := commands.ReadSecretValueMasked(c.Logger, "user password", common.MinPasswordLength, 0)
 	if err != nil {
 		return fmt.Errorf("failed to read user password: %v", err)
 	}

@@ -2,6 +2,7 @@ package states
 
 import (
 	cliCommands "reimagined_eureka/internal/client/cli/commands"
+	"reimagined_eureka/internal/client/cli/commands/auth"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
 	clientEntities "reimagined_eureka/internal/client/entities"
 	"reimagined_eureka/internal/client/infra/logging"
@@ -28,7 +29,7 @@ func NewMasterKeyState(
 	userID int,
 ) *MasterKeyState {
 	cmds := []cliEntities.Command{
-		cliCommands.NewMasterKeyCommand(logger, storage, cryptoProvider, login),
+		auth.NewMasterKeyCommand(logger, storage, cryptoProvider, login),
 		&cliCommands.QuitCommand{},
 	}
 	return &MasterKeyState{
