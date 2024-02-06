@@ -35,7 +35,7 @@ func (r *FilesRepo) Read(
 	ctx context.Context, tx entities.Tx, userID int, rowID int, lock bool,
 ) (*common.FileReq, int, error) {
 	var file common.File
-	query := "select * from files where id = $1 and user_id = $2" // TODO: check delete flag in the future
+	query := "select * from files where id = $1 and user_id = $2 and not is_deleted"
 	if lock {
 		query = query + " for update"
 	}

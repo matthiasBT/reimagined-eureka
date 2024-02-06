@@ -21,6 +21,7 @@ type IStorage interface {
 	ReadNotes(userID int) ([]*NoteLocal, error)
 	ReadNote(userID int, noteID int) (*NoteLocal, error)
 	SaveNote(note *NoteLocal) error
+	DeleteNote(rowID int) error
 
 	ReadFiles(userID int) ([]*FileLocal, error)
 	ReadFile(userID int, fileID int) (*FileLocal, error)

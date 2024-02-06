@@ -106,11 +106,25 @@ func (p *ServerProxy) DeleteCredentials(rowID int) error {
 	if p.sessionCookie == "" {
 		return ErrNoSessionCookie
 	}
-	idPart := fmt.Sprintf("/%d", rowID)
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathCredentials + idPart,
+		Path:   urlPrefix + pathCredentials + fmt.Sprintf("/%d", rowID),
+	}
+	if err := p.deleteSecret(fullURL.String()); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *ServerProxy) DeleteNote(rowID int) error {
+	if p.sessionCookie == "" {
+		return ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathNote + fmt.Sprintf("/%d", rowID),
 	}
 	if err := p.deleteSecret(fullURL.String()); err != nil {
 		return err

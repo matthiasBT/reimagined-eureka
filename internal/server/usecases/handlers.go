@@ -127,6 +127,7 @@ func (c *BaseController) writeCredentials(w http.ResponseWriter, r *http.Request
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrDoesntExist) {
 			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -146,7 +147,7 @@ func (c *BaseController) deleteCredentials(w http.ResponseWriter, r *http.Reques
 	rowID, err := strconv.Atoi(rowIDRaw)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		msg := fmt.Errorf("Not a valid row ID: %v", err).Error()
+		msg := fmt.Errorf("not a valid row ID: %v", err).Error()
 		w.Write([]byte(msg))
 		return
 	}
@@ -156,10 +157,40 @@ func (c *BaseController) deleteCredentials(w http.ResponseWriter, r *http.Reques
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrDoesntExist) {
 			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Errorf("failed to delete credentials: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+}
+
+func (c *BaseController) deleteNote(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	rowIDRaw := chi.URLParam(r, "noteID")
+	rowID, err := strconv.Atoi(rowIDRaw)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		msg := fmt.Errorf("not a valid row ID: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	tx, _ := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	if err := c.notesRepo.Delete(r.Context(), tx, *userID, rowID); err != nil {
+		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to delete note: %v", err).Error()
 		w.Write([]byte(msg))
 		return
 	}
@@ -181,6 +212,7 @@ func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrDoesntExist) {
 			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -207,6 +239,7 @@ func (c *BaseController) writeFile(w http.ResponseWriter, r *http.Request) {
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrDoesntExist) {
 			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -233,6 +266,7 @@ func (c *BaseController) writeCard(w http.ResponseWriter, r *http.Request) {
 		defer tx.Rollback()
 		if errors.Is(err, entities.ErrDoesntExist) {
 			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)

@@ -93,6 +93,7 @@ func createCommands(
 		cliCommands.NewUpdateCardCommand(logger, storage, cryptoProvider, proxy, userID),
 
 		cliCommands.NewDeleteCredsCommand(logger, storage, proxy, userID),
+		cliCommands.NewDeleteNoteCommand(logger, storage, proxy, userID),
 
 		&cliCommands.QuitCommand{},
 	}

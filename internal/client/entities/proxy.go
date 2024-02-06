@@ -13,6 +13,7 @@ type IProxy interface {
 
 	AddNote(note *common.NoteReq) (int, error)
 	UpdateNote(note *common.NoteReq) error
+	DeleteNote(rowID int) error
 
 	AddFile(file *common.FileReq) (int, error)
 	UpdateFile(file *common.FileReq) error
