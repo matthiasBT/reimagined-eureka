@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"os"
+	"syscall"
 
 	"reimagined_eureka/internal/client/adapters"
 	cliEntities "reimagined_eureka/internal/client/cli/entities"
@@ -15,11 +16,12 @@ const PromptGeneric = "> "
 const PromptOnExit = "Bye!"
 
 type Terminal struct {
-	logger    logging.ILogger
-	storage   clientEntities.IStorage
-	proxy     clientEntities.IProxy
-	currState cliEntities.State
-	scanner   *bufio.Scanner
+	logger      logging.ILogger
+	storage     clientEntities.IStorage
+	proxy       clientEntities.IProxy
+	currState   cliEntities.State
+	scanner     *bufio.Scanner
+	exitChannel chan os.Signal
 }
 
 func NewTerminal(
@@ -27,14 +29,16 @@ func NewTerminal(
 	storage clientEntities.IStorage,
 	proxy clientEntities.IProxy,
 	cryptoProvider *adapters.CryptoProvider,
+	exitChannel chan os.Signal,
 ) *Terminal {
 	scanner := bufio.NewScanner(os.Stdin)
 	return &Terminal{
-		logger:    logger,
-		storage:   storage,
-		proxy:     proxy,
-		currState: cliStates.NewInitialState(logger, storage, proxy, cryptoProvider),
-		scanner:   scanner,
+		logger:      logger,
+		storage:     storage,
+		proxy:       proxy,
+		currState:   cliStates.NewInitialState(logger, storage, proxy, cryptoProvider),
+		scanner:     scanner,
+		exitChannel: exitChannel,
 	}
 }
 
@@ -54,6 +58,7 @@ func (t *Terminal) Run() {
 			if nextState != nil {
 				if _, ok := nextState.(*cliStates.QuitState); ok {
 					t.logger.Successln(PromptOnExit)
+					t.exitChannel <- syscall.SIGINT
 					return
 				}
 				t.currState = nextState
@@ -63,6 +68,7 @@ func (t *Terminal) Run() {
 		}
 		t.handleInputErrors()
 		t.logger.Successln(PromptOnExit)
+		t.exitChannel <- syscall.SIGINT
 		return
 	}
 }
@@ -70,6 +76,6 @@ func (t *Terminal) Run() {
 func (t *Terminal) handleInputErrors() {
 	if err := t.scanner.Err(); err != nil {
 		t.logger.Failureln("Failureln reading input:", err)
-		os.Exit(1)
+		t.exitChannel <- syscall.SIGINT
 	}
 }

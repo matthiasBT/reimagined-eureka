@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"reimagined_eureka/internal/client/adapters"
 	"reimagined_eureka/internal/client/cli"
@@ -35,6 +36,7 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	go cli.NewTerminal(logger, storage, serverProxy, cryptoProvider).Run()
+	go cli.NewTerminal(logger, storage, serverProxy, cryptoProvider, signals).Run()
 	<-signals
+	time.Sleep(1 * time.Second)
 }
