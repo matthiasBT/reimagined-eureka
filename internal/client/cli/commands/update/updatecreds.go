@@ -12,9 +12,9 @@ import (
 )
 
 type UpdateCredsCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 	rowIDServer    int
@@ -30,9 +30,9 @@ func NewUpdateCredsCommand(
 	userID int,
 ) *UpdateCredsCommand {
 	return &UpdateCredsCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -54,7 +54,7 @@ func (c *UpdateCredsCommand) Validate(args ...string) error {
 	if err != nil {
 		return err
 	}
-	creds, err := c.Storage.ReadCredential(c.userID, rowID)
+	creds, err := c.storage.ReadCredential(c.userID, rowID)
 	if err != nil {
 		return fmt.Errorf("failed to read creds: %v", err)
 	}
@@ -68,7 +68,7 @@ func (c *UpdateCredsCommand) Validate(args ...string) error {
 }
 
 func (c *UpdateCredsCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := add.PrepareCreds(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := add.PrepareCreds(c.logger, c.cryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -96,7 +96,7 @@ func (c *UpdateCredsCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: c.rowIDServer,
 	}
-	if err := c.Storage.SaveCredentials(&credsLocal); err != nil {
+	if err := c.storage.SaveCredentials(&credsLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to update credentials locally: %v", err).Error(),
 		}

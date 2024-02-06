@@ -11,9 +11,9 @@ import (
 )
 
 type AddNoteCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 }
@@ -26,9 +26,9 @@ func NewAddNoteCommand(
 	userID int,
 ) *AddNoteCommand {
 	return &AddNoteCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -50,7 +50,7 @@ func (c *AddNoteCommand) Validate(args ...string) error {
 }
 
 func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := PrepareNote(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := PrepareNote(c.logger, c.cryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -77,7 +77,7 @@ func (c *AddNoteCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: rowID,
 	}
-	if err := c.Storage.SaveNote(&noteLocal); err != nil {
+	if err := c.storage.SaveNote(&noteLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to store note locally: %v", err).Error(),
 		}

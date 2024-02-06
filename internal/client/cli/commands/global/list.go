@@ -11,9 +11,9 @@ import (
 )
 
 type ListSecretsCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	userID         int // todo: check exported members of all structs!
 	secretType     string
 }
@@ -25,9 +25,9 @@ func NewListSecretsCommand(
 	userID int,
 ) *ListSecretsCommand {
 	return &ListSecretsCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		userID:         userID,
 	}
 }
@@ -80,8 +80,8 @@ func (c *ListSecretsCommand) validateType(what string) error {
 
 func (c *ListSecretsCommand) listCredentials() error {
 	if c.secretType == commands.SecretTypeCreds || c.secretType == commands.SecretTypeAll {
-		c.Logger.Warningln("Credentials in storage:")
-		if creds, err := c.Storage.ReadCredentials(c.userID); err != nil {
+		c.logger.Warningln("Credentials in storage:")
+		if creds, err := c.storage.ReadCredentials(c.userID); err != nil {
 			return err
 		} else {
 			for _, cred := range creds {
@@ -94,8 +94,8 @@ func (c *ListSecretsCommand) listCredentials() error {
 
 func (c *ListSecretsCommand) listNotes() error {
 	if c.secretType == commands.SecretTypeNotes || c.secretType == commands.SecretTypeAll {
-		c.Logger.Warningln("Notes in storage:")
-		if notes, err := c.Storage.ReadNotes(c.userID); err != nil {
+		c.logger.Warningln("Notes in storage:")
+		if notes, err := c.storage.ReadNotes(c.userID); err != nil {
 			return err
 		} else {
 			for _, note := range notes {
@@ -108,8 +108,8 @@ func (c *ListSecretsCommand) listNotes() error {
 
 func (c *ListSecretsCommand) listFiles() error {
 	if c.secretType == commands.SecretTypeFiles || c.secretType == commands.SecretTypeAll {
-		c.Logger.Warningln("Files in storage:")
-		if files, err := c.Storage.ReadFiles(c.userID); err != nil {
+		c.logger.Warningln("Files in storage:")
+		if files, err := c.storage.ReadFiles(c.userID); err != nil {
 			return err
 		} else {
 			for _, file := range files {
@@ -122,8 +122,8 @@ func (c *ListSecretsCommand) listFiles() error {
 
 func (c *ListSecretsCommand) listCards() error {
 	if c.secretType == commands.SecretTypeCards || c.secretType == commands.SecretTypeAll {
-		c.Logger.Warningln("Cards in storage:")
-		if cards, err := c.Storage.ReadCards(c.userID); err != nil {
+		c.logger.Warningln("Cards in storage:")
+		if cards, err := c.storage.ReadCards(c.userID); err != nil {
 			return err
 		} else {
 			for _, card := range cards {
@@ -141,9 +141,9 @@ func (c *ListSecretsCommand) failedResult(err error) cliEntities.CommandResult {
 }
 
 func (c *ListSecretsCommand) printItem(id int, args ...string) {
-	c.Logger.Warningln("ID: %d", id)
+	c.logger.Warningln("ID: %d", id)
 	for _, arg := range args {
-		c.Logger.Infoln("%s", arg)
+		c.logger.Infoln("%s", arg)
 	}
-	c.Logger.Infoln(strings.Repeat(commands.SecretDelimiterChar, commands.SecretDelimiterWidth))
+	c.logger.Infoln(strings.Repeat(commands.SecretDelimiterChar, commands.SecretDelimiterWidth))
 }

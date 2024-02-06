@@ -11,9 +11,9 @@ import (
 )
 
 type SyncCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 }
@@ -26,9 +26,9 @@ func NewSyncCommand(
 	userID int,
 ) *SyncCommand {
 	return &SyncCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -50,14 +50,14 @@ func (c *SyncCommand) Validate(args ...string) error {
 }
 
 func (c *SyncCommand) Execute() cliEntities.CommandResult {
-	tx, err := c.Storage.Tx()
+	tx, err := c.storage.Tx()
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to sync data: %v", err).Error(),
 		}
 	}
 	defer tx.Commit()
-	if err := c.Storage.Purge(c.userID); err != nil {
+	if err := c.storage.Purge(c.userID); err != nil {
 		defer tx.Rollback()
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to clean old data: %v", err).Error(),
@@ -100,7 +100,7 @@ func (c *SyncCommand) syncCredentials() error {
 			return err
 		}
 		if result == nil || len(result) == 0 {
-			c.Logger.Warningln("Credentials synced")
+			c.logger.Warningln("Credentials synced")
 			return nil
 		}
 		for _, row := range result {
@@ -116,7 +116,7 @@ func (c *SyncCommand) syncCredentials() error {
 				},
 				ServerID: *row.ServerID,
 			}
-			if err := c.Storage.SaveCredentials(&prepared); err != nil {
+			if err := c.storage.SaveCredentials(&prepared); err != nil {
 				return err
 			}
 		}
@@ -131,7 +131,7 @@ func (c *SyncCommand) syncNotes() error {
 			return err
 		}
 		if result == nil || len(result) == 0 {
-			c.Logger.Warningln("Notes synced")
+			c.logger.Warningln("Notes synced")
 			return nil
 		}
 		for _, row := range result {
@@ -146,7 +146,7 @@ func (c *SyncCommand) syncNotes() error {
 				},
 				ServerID: *row.ServerID,
 			}
-			if err := c.Storage.SaveNote(&prepared); err != nil {
+			if err := c.storage.SaveNote(&prepared); err != nil {
 				return err
 			}
 		}
@@ -161,7 +161,7 @@ func (c *SyncCommand) syncFiles() error {
 			return err
 		}
 		if result == nil || len(result) == 0 {
-			c.Logger.Warningln("Files synced")
+			c.logger.Warningln("Files synced")
 			return nil
 		}
 		for _, row := range result {
@@ -176,7 +176,7 @@ func (c *SyncCommand) syncFiles() error {
 				},
 				ServerID: *row.ServerID,
 			}
-			if err := c.Storage.SaveFile(&prepared); err != nil {
+			if err := c.storage.SaveFile(&prepared); err != nil {
 				return err
 			}
 		}
@@ -191,7 +191,7 @@ func (c *SyncCommand) syncCards() error {
 			return err
 		}
 		if result == nil || len(result) == 0 {
-			c.Logger.Warningln("Cards synced")
+			c.logger.Warningln("Cards synced")
 			return nil
 		}
 		for _, row := range result {
@@ -206,7 +206,7 @@ func (c *SyncCommand) syncCards() error {
 				},
 				ServerID: *row.ServerID,
 			}
-			if err := c.Storage.SaveCard(&prepared); err != nil {
+			if err := c.storage.SaveCard(&prepared); err != nil {
 				return err
 			}
 		}

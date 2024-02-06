@@ -12,9 +12,9 @@ import (
 )
 
 type UpdateCardCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 	rowIDServer    int
@@ -30,9 +30,9 @@ func NewUpdateCardCommand(
 	userID int,
 ) *UpdateCardCommand {
 	return &UpdateCardCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -54,7 +54,7 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 	if err != nil {
 		return err
 	}
-	card, err := c.Storage.ReadCard(c.userID, rowID)
+	card, err := c.storage.ReadCard(c.userID, rowID)
 	if err != nil {
 		return fmt.Errorf("failed to read card: %v", err)
 	}
@@ -76,7 +76,7 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 }
 
 func (c *UpdateCardCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := add.PrepareCard(c.Logger, c.CryptoProvider, c.cardNumber)
+	encrypted, meta, err := add.PrepareCard(c.logger, c.cryptoProvider, c.cardNumber)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -102,7 +102,7 @@ func (c *UpdateCardCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: c.rowIDServer,
 	}
-	if err := c.Storage.SaveCard(&cardLocal); err != nil {
+	if err := c.storage.SaveCard(&cardLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to update card data locally: %v", err).Error(),
 		}

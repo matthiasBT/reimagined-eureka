@@ -12,9 +12,9 @@ import (
 )
 
 type UpdateNoteCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 	rowIDServer    int
@@ -29,9 +29,9 @@ func NewUpdateNoteCommand(
 	userID int,
 ) *UpdateNoteCommand {
 	return &UpdateNoteCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -53,7 +53,7 @@ func (c *UpdateNoteCommand) Validate(args ...string) error {
 	if err != nil {
 		return err
 	}
-	note, err := c.Storage.ReadNote(c.userID, rowID)
+	note, err := c.storage.ReadNote(c.userID, rowID)
 	if err != nil {
 		return fmt.Errorf("failed to read note: %v", err)
 	}
@@ -66,7 +66,7 @@ func (c *UpdateNoteCommand) Validate(args ...string) error {
 }
 
 func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := add.PrepareNote(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := add.PrepareNote(c.logger, c.cryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -92,7 +92,7 @@ func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: c.rowIDServer,
 	}
-	if err := c.Storage.SaveNote(&noteLocal); err != nil {
+	if err := c.storage.SaveNote(&noteLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to update note locally: %v", err).Error(),
 		}

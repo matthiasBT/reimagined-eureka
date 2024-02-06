@@ -11,9 +11,9 @@ import (
 )
 
 type MasterKeyCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	Login          string
 	masterKey      string
 }
@@ -25,9 +25,9 @@ func NewMasterKeyCommand(
 	login string,
 ) *MasterKeyCommand {
 	return &MasterKeyCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		Login:          login,
 	}
 }
@@ -45,19 +45,19 @@ func (c *MasterKeyCommand) Validate(args ...string) error {
 		return fmt.Errorf("example: master-key")
 	}
 	key, err := commands.ReadSecretValueMasked(
-		c.Logger, "master key", commands.MinMasterKeyLength, commands.MaxMasterKeyLength,
+		c.logger, "master key", commands.MinMasterKeyLength, commands.MaxMasterKeyLength,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}
 	c.masterKey = key
-	c.CryptoProvider.SetMasterKey(key)
+	c.cryptoProvider.SetMasterKey(key)
 	return nil
 }
 
 func (c *MasterKeyCommand) Execute() cliEntities.CommandResult {
-	c.Logger.Warningln("Checking the master key...")
-	user, err := c.Storage.ReadUser(c.Login)
+	c.logger.Warningln("Checking the master key...")
+	user, err := c.storage.ReadUser(c.Login)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to validate master-key: %v", err).Error(),
@@ -68,13 +68,13 @@ func (c *MasterKeyCommand) Execute() cliEntities.CommandResult {
 		Salt:       user.EntropySalt,
 		Nonce:      user.EntropyNonce,
 	}
-	entropy, err := c.CryptoProvider.Decrypt(&encrypted)
+	entropy, err := c.cryptoProvider.Decrypt(&encrypted)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to validate master-key: %v", err).Error(),
 		}
 	}
-	if err := c.CryptoProvider.VerifyHash(entropy, user.EntropyHash); err != nil {
+	if err := c.cryptoProvider.VerifyHash(entropy, user.EntropyHash); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("incorrect master-key: %v", err).Error(),
 		}

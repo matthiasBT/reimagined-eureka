@@ -13,9 +13,9 @@ import (
 )
 
 type AddFileCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 	filePath       string
@@ -29,9 +29,9 @@ func NewAddFileCommand(
 	userID int,
 ) *AddFileCommand {
 	return &AddFileCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -54,7 +54,7 @@ func (c *AddFileCommand) Validate(args ...string) error {
 }
 
 func (c *AddFileCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := PrepareFile(c.Logger, c.CryptoProvider, c.filePath)
+	encrypted, meta, err := PrepareFile(c.logger, c.cryptoProvider, c.filePath)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -81,7 +81,7 @@ func (c *AddFileCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: rowID,
 	}
-	if err := c.Storage.SaveFile(&fileLocal); err != nil {
+	if err := c.storage.SaveFile(&fileLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to store file data locally: %v", err).Error(),
 		}

@@ -11,9 +11,9 @@ import (
 )
 
 type AddCredsCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
 	credsLogin     string
@@ -27,9 +27,9 @@ func NewAddCredsCommand(
 	userID int,
 ) *AddCredsCommand {
 	return &AddCredsCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		proxy:          proxy,
 		userID:         userID,
 	}
@@ -52,7 +52,7 @@ func (c *AddCredsCommand) Validate(args ...string) error {
 }
 
 func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
-	encrypted, meta, err := PrepareCreds(c.Logger, c.CryptoProvider)
+	encrypted, meta, err := PrepareCreds(c.logger, c.cryptoProvider)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: err.Error(),
@@ -81,7 +81,7 @@ func (c *AddCredsCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: rowID,
 	}
-	if err := c.Storage.SaveCredentials(&credsLocal); err != nil {
+	if err := c.storage.SaveCredentials(&credsLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to store credentials locally: %v", err).Error(),
 		}

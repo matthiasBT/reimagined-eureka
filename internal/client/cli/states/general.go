@@ -25,6 +25,9 @@ func (s GeneralState) GetPrompt() string {
 func (s GeneralState) Execute(line string) (cliEntities.State, cliEntities.CommandResult) {
 	parts := strings.Fields(line)
 	for _, cmd := range s.Commands {
+		if len(parts) == 0 {
+			continue
+		}
 		if parts[0] == cmd.GetName() {
 			if err := cmd.Validate(parts[1:]...); err != nil {
 				return nil, cliEntities.CommandResult{FailureMessage: err.Error()}
