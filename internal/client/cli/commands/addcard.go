@@ -14,17 +14,6 @@ import (
 	"reimagined_eureka/internal/common"
 )
 
-const monthMin = 1
-const monthMax = 12
-const yearMin = 20
-const monthMinChars = 1
-const monthMaxChars = 1
-const yearMinChars = 1
-const yearMaxChars = 2
-const cscMinChars = 3
-const cscMaxChars = 3
-const nameMinChars = 1
-
 type AddCardCommand struct {
 	Logger         logging.ILogger
 	Storage        clientEntities.IStorage
@@ -75,66 +64,10 @@ func (c *AddCardCommand) Validate(args ...string) error {
 }
 
 func (c *AddCardCommand) Execute() cliEntities.CommandResult {
-	monthRaw, err := readSecretValueMasked(c.Logger, "expiration date (month)", monthMinChars, monthMaxChars)
+	encrypted, meta, err := prepareCard(c.Logger, c.CryptoProvider, c.cardNumber)
 	if err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read month: %v", err).Error(),
-		}
-	}
-	yearRaw, err := readSecretValueMasked(c.Logger, "expiration date (year)", yearMinChars, yearMaxChars)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read year: %v", err).Error(),
-		}
-	}
-	cscRaw, err := readSecretValueMasked(c.Logger, "card security code", cscMinChars, cscMaxChars)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read csc: %v", err).Error(),
-		}
-	}
-	month, year, csc, err := parse(strings.Join([]string{monthRaw, yearRaw, cscRaw}, " "))
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to parse card data: %v", err).Error(),
-		}
-	}
-	firstName, err := readSecretValueMasked(c.Logger, "owner (first name)", nameMinChars, 0)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read name: %v", err).Error(),
-		}
-	}
-	lastName, err := readSecretValueMasked(c.Logger, "owner (last name)", nameMinChars, 0)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read name: %v", err).Error(),
-		}
-	}
-	meta, err := readNonSecretValue(c.Logger, "meta information")
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read meta information: %v", err).Error(),
-		}
-	}
-	cardData := clientEntities.CardDataPlain{
-		Month:     month,
-		Year:      year,
-		CSC:       csc,
-		FirstName: firstName,
-		LastName:  lastName,
-		Number:    c.cardNumber,
-	}
-	cardBinary, err := json.Marshal(cardData)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to prepare card data for encryption: %v", err).Error(),
-		}
-	}
-	encrypted, err := c.CryptoProvider.Encrypt(cardBinary)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to encrypt card data: %v", err).Error(),
+			FailureMessage: err.Error(),
 		}
 	}
 	payload := common.CardReq{
@@ -148,7 +81,6 @@ func (c *AddCardCommand) Execute() cliEntities.CommandResult {
 			FailureMessage: fmt.Errorf("request failed: %v", err).Error(),
 		}
 	}
-
 	cardLocal := clientEntities.CardLocal{
 		Card: common.Card{
 			UserID:           c.userID,
@@ -159,7 +91,7 @@ func (c *AddCardCommand) Execute() cliEntities.CommandResult {
 		},
 		ServerID: rowID,
 	}
-	if err := c.Storage.SaveCards(&cardLocal); err != nil {
+	if err := c.Storage.SaveCard(&cardLocal); err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to store card data locally: %v", err).Error(),
 		}
@@ -207,4 +139,54 @@ func isCardNumber(what string) bool {
 		}
 	}
 	return !(len(what) < cardNumberMinLength || len(what) > cardNumberMaxLength)
+}
+
+func prepareCard(
+	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider, cardNumber string,
+) (*common.EncryptionResult, string, error) {
+	monthRaw, err := readSecretValueMasked(logger, "expiration date (month)", monthMinChars, monthMaxChars)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read month: %v", err)
+	}
+	yearRaw, err := readSecretValueMasked(logger, "expiration date (year)", yearMinChars, yearMaxChars)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read year: %v", err)
+	}
+	cscRaw, err := readSecretValueMasked(logger, "card security code", cscMinChars, cscMaxChars)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read csc: %v", err)
+	}
+	month, year, csc, err := parse(strings.Join([]string{monthRaw, yearRaw, cscRaw}, " "))
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to parse card data: %v", err)
+	}
+	firstName, err := readSecretValueMasked(logger, "owner (first name)", nameMinChars, 0)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read name: %v", err)
+	}
+	lastName, err := readSecretValueMasked(logger, "owner (last name)", nameMinChars, 0)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read name: %v", err)
+	}
+	meta, err := readNonSecretValue(logger, "meta information")
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
+	}
+	cardData := clientEntities.CardDataPlain{
+		Month:     month,
+		Year:      year,
+		CSC:       csc,
+		FirstName: firstName,
+		LastName:  lastName,
+		Number:    cardNumber,
+	}
+	cardBinary, err := json.Marshal(cardData)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to prepare card data for encryption: %v", err)
+	}
+	encrypted, err := cryptoProvider.Encrypt(cardBinary)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to encrypt card data: %v", err)
+	}
+	return encrypted, meta, nil
 }

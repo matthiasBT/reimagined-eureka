@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
@@ -26,9 +28,28 @@ func (r *CardsRepo) Write(ctx context.Context, tx entities.Tx, userID int, data 
 }
 
 func (r *CardsRepo) Read(
-	ctx context.Context, tx entities.Tx, userID int, rowId int, lock bool,
+	ctx context.Context, tx entities.Tx, userID int, rowID int, lock bool,
 ) (*common.CardReq, int, error) {
-	panic("implement me!")
+	var card common.Card
+	query := "select * from cards where id = $1 and user_id = $2" // TODO: check delete flag in the future
+	if lock {
+		query = query + " for update"
+	}
+	if err := tx.GetContext(ctx, &card, query, rowID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, entities.ErrDoesntExist
+		}
+		return nil, 0, err
+	}
+	var result common.CardReq
+	result.ServerID = &rowID
+	result.Meta = card.Meta
+	result.Value = &common.EncryptionResult{
+		Ciphertext: card.EncryptedContent,
+		Salt:       card.Salt,
+		Nonce:      card.Nonce,
+	}
+	return &result, card.Version, nil
 }
 
 func (r *CardsRepo) create(
@@ -47,14 +68,14 @@ func (r *CardsRepo) create(
 		return 0, err
 	}
 	r.logger.Infof("Card created")
-	if err := r.createVersion(ctx, tx, result.ID, data); err != nil {
+	if err := r.createVersion(ctx, tx, result.ID, data, entities.DefaultVersion); err != nil {
 		return 0, err
 	}
 	return result.ID, nil
 }
 
 func (r *CardsRepo) createVersion(
-	ctx context.Context, tx entities.Tx, cardID int, data *common.CardReq,
+	ctx context.Context, tx entities.Tx, cardID int, data *common.CardReq, version int,
 ) error {
 	query := `
 		insert into cards_versions(card_id, version, meta, encrypted_content, salt, nonce)
@@ -64,7 +85,7 @@ func (r *CardsRepo) createVersion(
 		ctx,
 		query,
 		cardID,
-		entities.DefaultVersion,
+		version,
 		data.Meta,
 		data.Value.Ciphertext,
 		data.Value.Salt,
@@ -77,6 +98,31 @@ func (r *CardsRepo) createVersion(
 	return nil
 }
 
-func (r *CardsRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.CardReq) (int, error) {
-	panic("Implement me!")
+func (r *CardsRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.CardReq) error {
+	_, version, err := r.Read(ctx, tx, userID, *data.ServerID, true)
+	if err != nil {
+		return err
+	}
+	query := `
+		update cards
+		set version = $2, meta = $3, encrypted_content = $4, salt = $5, nonce = $6
+		where id = $1
+	`
+	if err := tx.ExecContext(
+		ctx,
+		query,
+		*data.ServerID,
+		version+1,
+		data.Meta,
+		data.Value.Ciphertext,
+		data.Value.Salt,
+		data.Value.Nonce,
+	); err != nil {
+		r.logger.Errorf("Failed to update card: %s", err.Error())
+		return err
+	}
+	if err := r.createVersion(ctx, tx, *data.ServerID, data, version+1); err != nil {
+		return err
+	}
+	return nil
 }

@@ -27,7 +27,7 @@ type IStorage interface {
 
 	ReadCards(userID int) ([]*CardLocal, error)
 	ReadCard(userID int, cardID int) (*CardLocal, error)
-	SaveCards(card *CardLocal) error
+	SaveCard(card *CardLocal) error
 }
 
 type ITx interface {

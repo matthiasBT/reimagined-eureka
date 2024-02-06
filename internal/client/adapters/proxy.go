@@ -142,6 +142,20 @@ func (p *ServerProxy) AddCard(card *common.CardReq) (int, error) {
 	return p.addSecret(false, fullURL.String(), payload, err)
 }
 
+func (p *ServerProxy) UpdateCard(card *common.CardReq) error {
+	if p.sessionCookie == "" {
+		return ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathWriteCard,
+	}
+	payload, err := json.Marshal(card)
+	_, err = p.addSecret(true, fullURL.String(), payload, err)
+	return err
+}
+
 func (p *ServerProxy) signInOrUp(
 	login, password, path string,
 	entropy *common.Entropy,
