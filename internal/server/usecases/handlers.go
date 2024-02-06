@@ -225,6 +225,35 @@ func (c *BaseController) deleteFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (c *BaseController) deleteCard(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	rowIDRaw := chi.URLParam(r, "cardID")
+	rowID, err := strconv.Atoi(rowIDRaw)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		msg := fmt.Errorf("not a valid row ID: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	tx, _ := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	if err := c.cardsRepo.Delete(r.Context(), tx, *userID, rowID); err != nil {
+		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found"))
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to delete card: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+}
+
 func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {

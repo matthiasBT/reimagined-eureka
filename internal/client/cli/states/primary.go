@@ -99,6 +99,7 @@ func createCommands(
 		delete2.NewDeleteCredsCommand(storage, proxy, userID),
 		delete2.NewDeleteNoteCommand(storage, proxy, userID),
 		delete2.NewDeleteFileCommand(storage, proxy, userID),
+		delete2.NewDeleteCardCommand(storage, proxy, userID),
 
 		&cliCommands.QuitCommand{},
 	}

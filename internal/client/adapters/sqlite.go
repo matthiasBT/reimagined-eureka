@@ -164,6 +164,12 @@ func (s *SQLiteStorage) DeleteNote(rowID int) error {
 	return err
 }
 
+func (s *SQLiteStorage) DeleteCard(rowID int) error {
+	query := "update cards set is_deleted = true where id = $1"
+	_, err := s.db.Exec(query, rowID)
+	return err
+}
+
 func (s *SQLiteStorage) DeleteFile(rowID int) error {
 	query := "update files set is_deleted = true where id = $1"
 	_, err := s.db.Exec(query, rowID)

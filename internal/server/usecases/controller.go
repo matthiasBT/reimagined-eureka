@@ -59,6 +59,7 @@ func (c *BaseController) Route() *chi.Mux {
 
 	r.Post("/secrets/cards", c.writeCard)
 	r.Put("/secrets/cards", c.writeCard)
+	r.Delete("/secrets/cards/{cardID}", c.deleteCard)
 
 	r.Get("/ping", c.ping)
 	return r

@@ -52,6 +52,19 @@ func (r *CardsRepo) Read(
 	return &result, card.Version, nil
 }
 
+func (r *CardsRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowID int) error {
+	_, _, err := r.Read(ctx, tx, userID, rowID, true)
+	if err != nil {
+		return err
+	}
+	query := "update cards set is_deleted = true where id = $1"
+	if err := tx.ExecContext(ctx, query, rowID); err != nil {
+		r.logger.Errorf("Failed to delete card: %s", err.Error())
+		return err
+	}
+	return nil
+}
+
 func (r *CardsRepo) create(
 	ctx context.Context, tx entities.Tx, userID int, data *common.CardReq,
 ) (int, error) {

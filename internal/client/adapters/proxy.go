@@ -132,6 +132,21 @@ func (p *ServerProxy) DeleteNote(rowID int) error {
 	return nil
 }
 
+func (p *ServerProxy) DeleteCard(rowID int) error {
+	if p.sessionCookie == "" {
+		return ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathCard + fmt.Sprintf("/%d", rowID),
+	}
+	if err := p.deleteSecret(fullURL.String()); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *ServerProxy) DeleteFile(rowID int) error {
 	if p.sessionCookie == "" {
 		return ErrNoSessionCookie
