@@ -1,0 +1,99 @@
+package repositories
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"time"
+
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
+
+	"reimagined_eureka/internal/common"
+	"reimagined_eureka/internal/server/entities"
+	"reimagined_eureka/internal/server/infra/config"
+	"reimagined_eureka/internal/server/infra/logging"
+)
+
+type UserRepo struct {
+	logger  logging.ILogger
+	storage entities.Storage
+}
+
+func NewPGUserRepo(logger logging.ILogger, storage entities.Storage) *UserRepo {
+	return &UserRepo{
+		logger:  logger,
+		storage: storage,
+	}
+}
+
+func (r *UserRepo) CreateUser(
+	ctx context.Context, tx entities.Tx, login string, pwdhash []byte, entropy *common.Entropy,
+) (*entities.User, error) {
+	r.logger.Infof("Creating a new user: %s", login)
+	var user = entities.User{}
+	query := `
+		insert into users(login, password_hash, entropy_hash, entropy_encrypted, entropy_salt, entropy_nonce)
+		values ($1, $2, $3, $4, $5, $6) returning *
+	`
+	if err := tx.GetContext(
+		ctx, &user, query, login, pwdhash, entropy.Hash, entropy.Ciphertext, entropy.Salt, entropy.Nonce,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			r.logger.Infof("login is already taken")
+			return nil, entities.ErrLoginAlreadyTaken
+		}
+		r.logger.Errorf("Failed to create a user record: %s", err.Error())
+		return nil, err
+	}
+	r.logger.Infof("User created: %s", login)
+	return &user, nil
+}
+
+func (r *UserRepo) CreateSession(
+	ctx context.Context, tx entities.Tx, user *entities.User, token string,
+) (*entities.Session, error) {
+	r.logger.Infof("Creating a session for a user: %s", user.Login)
+	var session = entities.Session{}
+	query := "insert into sessions(user_id, token, expires_at) values ($1, $2, $3) returning *"
+	expiresAt := time.Now().Add(config.SessionTTL)
+	if err := tx.GetContext(ctx, &session, query, user.ID, token, expiresAt); err != nil {
+		r.logger.Errorf("Failed to create a user session: %s", err.Error())
+		return nil, err
+	}
+	r.logger.Infof("Session created!")
+	return &session, nil
+}
+
+func (r *UserRepo) FindUser(ctx context.Context, request *common.UserCredentials) (*entities.User, error) {
+	r.logger.Infof("Searching for a user: %s", request.Login)
+	var user = entities.User{}
+	query := "select * from users where login = $1"
+	if err := r.storage.GetContext(ctx, &user, query, request.Login); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			r.logger.Infoln("User not found")
+			return nil, nil
+		}
+		r.logger.Errorf("Failed to find the user: %s", err.Error())
+		return nil, err
+	}
+	r.logger.Infoln("User found")
+	return &user, nil
+}
+
+func (r *UserRepo) FindSession(ctx context.Context, token string) (*entities.Session, error) {
+	r.logger.Infof("Looking for a session")
+	var session = entities.Session{}
+	query := "select * from sessions where token = $1"
+	if err := r.storage.GetContext(ctx, &session, query, token); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			r.logger.Infoln("Session not found")
+			return nil, nil
+		}
+		r.logger.Errorf("Failed to find the session: %s", err.Error())
+		return nil, err
+	}
+	r.logger.Infoln("Session found")
+	return &session, nil
+}
