@@ -18,10 +18,10 @@ import (
 const urlPrefix = "/api"
 const pathSignIn = "/user/login"
 const pathSignUp = "/user/register"
-const pathWriteCredentials = "/secrets/credentials"
-const pathWriteNote = "/secrets/notes"
-const pathWriteFile = "/secrets/files"
-const pathWriteCard = "/secrets/cards"
+const pathCredentials = "/secrets/credentials"
+const pathNote = "/secrets/notes"
+const pathFile = "/secrets/files"
+const pathCard = "/secrets/cards"
 
 var ErrNoSessionCookie = errors.New("no session cookie set")
 
@@ -55,7 +55,7 @@ func (p *ServerProxy) AddCredentials(creds *common.CredentialsReq) (int, error) 
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteCredentials,
+		Path:   urlPrefix + pathCredentials,
 	}
 	payload, err := json.Marshal(creds)
 	return p.addSecret(false, fullURL.String(), payload, err)
@@ -68,7 +68,7 @@ func (p *ServerProxy) AddNote(note *common.NoteReq) (int, error) {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteNote,
+		Path:   urlPrefix + pathNote,
 	}
 	payload, err := json.Marshal(note)
 	return p.addSecret(false, fullURL.String(), payload, err)
@@ -81,7 +81,7 @@ func (p *ServerProxy) UpdateNote(note *common.NoteReq) error {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteNote,
+		Path:   urlPrefix + pathNote,
 	}
 	payload, err := json.Marshal(note)
 	_, err = p.addSecret(true, fullURL.String(), payload, err)
@@ -95,11 +95,27 @@ func (p *ServerProxy) UpdateCredentials(creds *common.CredentialsReq) error {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteCredentials,
+		Path:   urlPrefix + pathCredentials,
 	}
 	payload, err := json.Marshal(creds)
 	_, err = p.addSecret(true, fullURL.String(), payload, err)
 	return err
+}
+
+func (p *ServerProxy) DeleteCredentials(rowID int) error {
+	if p.sessionCookie == "" {
+		return ErrNoSessionCookie
+	}
+	idPart := fmt.Sprintf("/%d", rowID)
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathCredentials + idPart,
+	}
+	if err := p.deleteSecret(fullURL.String()); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *ServerProxy) AddFile(file *common.FileReq) (int, error) {
@@ -109,7 +125,7 @@ func (p *ServerProxy) AddFile(file *common.FileReq) (int, error) {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteFile,
+		Path:   urlPrefix + pathFile,
 	}
 	payload, err := json.Marshal(file)
 	return p.addSecret(false, fullURL.String(), payload, err)
@@ -122,7 +138,7 @@ func (p *ServerProxy) UpdateFile(file *common.FileReq) error {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteFile,
+		Path:   urlPrefix + pathFile,
 	}
 	payload, err := json.Marshal(file)
 	_, err = p.addSecret(true, fullURL.String(), payload, err)
@@ -136,7 +152,7 @@ func (p *ServerProxy) AddCard(card *common.CardReq) (int, error) {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteCard,
+		Path:   urlPrefix + pathCard,
 	}
 	payload, err := json.Marshal(card)
 	return p.addSecret(false, fullURL.String(), payload, err)
@@ -149,7 +165,7 @@ func (p *ServerProxy) UpdateCard(card *common.CardReq) error {
 	fullURL := url.URL{
 		Scheme: p.serverURL.Scheme,
 		Host:   p.serverURL.Host,
-		Path:   urlPrefix + pathWriteCard,
+		Path:   urlPrefix + pathCard,
 	}
 	payload, err := json.Marshal(card)
 	_, err = p.addSecret(true, fullURL.String(), payload, err)
@@ -246,6 +262,19 @@ func (p *ServerProxy) addSecret(exists bool, url string, payload []byte, err err
 		return 0, fmt.Errorf("incorrect response from server: can't interpret response as row ID")
 	}
 	return rowID, nil
+}
+
+func (p *ServerProxy) deleteSecret(url string) error {
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+	p.addSessionCookie(req)
+	resp, err := (&http.Client{}).Do(req)
+	if resp == nil || err != nil || resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("request failed: %v", err)
+	}
+	return nil
 }
 
 func getResponse(req *http.Request) ([]byte, []*http.Cookie, error) {

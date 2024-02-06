@@ -16,6 +16,7 @@ type IStorage interface {
 	ReadCredentials(userID int) ([]*CredentialLocal, error)
 	ReadCredential(userID int, credID int) (*CredentialLocal, error)
 	SaveCredentials(credentials *CredentialLocal) error
+	DeleteCredentials(rowID int) error
 
 	ReadNotes(userID int) ([]*NoteLocal, error)
 	ReadNote(userID int, noteID int) (*NoteLocal, error)

@@ -8,6 +8,7 @@ CREATE TABLE credentials (
     encrypted_password BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE credentials_versions (
@@ -29,6 +30,7 @@ CREATE TABLE notes (
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE notes_versions (
@@ -49,6 +51,7 @@ CREATE TABLE files (
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE files_versions (
@@ -69,6 +72,7 @@ CREATE TABLE cards (
     encrypted_content BYTEA NOT NULL,
     nonce BYTEA NOT NULL,
     salt BYTEA NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     version INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE cards_versions (

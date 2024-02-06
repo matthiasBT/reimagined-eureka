@@ -37,7 +37,7 @@ func (r *CredentialsRepo) Read(
 	ctx context.Context, tx entities.Tx, userID int, rowID int, lock bool,
 ) (*common.CredentialsReq, int, error) {
 	var creds common.Credential
-	query := "select * from credentials where id = $1 and user_id = $2" // TODO: check delete flag in the future
+	query := "select * from credentials where id = $1 and user_id = $2 and not is_deleted"
 	if lock {
 		query = query + " for update"
 	}
@@ -56,6 +56,19 @@ func (r *CredentialsRepo) Read(
 		Nonce:      creds.Nonce,
 	}
 	return &result, creds.Version, nil
+}
+
+func (r *CredentialsRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowID int) error {
+	_, _, err := r.Read(ctx, tx, userID, rowID, true)
+	if err != nil {
+		return err
+	}
+	query := "update credentials set is_deleted = true where id = $1"
+	if err := tx.ExecContext(ctx, query, rowID); err != nil {
+		r.logger.Errorf("Failed to delete creds: %s", err.Error())
+		return err
+	}
+	return nil
 }
 
 func (r *CredentialsRepo) create(

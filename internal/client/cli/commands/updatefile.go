@@ -16,7 +16,8 @@ type UpdateFileCommand struct {
 	proxy          clientEntities.IProxy
 	userID         int
 	filePath       string
-	rowID          int
+	rowIDServer    int
+	rowIDLocal     int
 }
 
 func NewUpdateFileCommand(
@@ -51,14 +52,15 @@ func (c *UpdateFileCommand) Validate(args ...string) error {
 	if err != nil {
 		return err
 	}
-	note, err := c.Storage.ReadFile(c.userID, rowID)
+	file, err := c.Storage.ReadFile(c.userID, rowID)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
-	if note == nil {
+	if file == nil {
 		return fmt.Errorf("file %d doesn't exist", rowID)
 	}
-	c.rowID = rowID
+	c.rowIDServer = file.ServerID
+	c.rowIDLocal = file.ID
 	c.filePath = args[1]
 	return nil
 }
@@ -71,7 +73,7 @@ func (c *UpdateFileCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	payload := common.FileReq{
-		ServerID: &c.rowID,
+		ServerID: &c.rowIDServer,
 		Meta:     meta,
 		Value:    encrypted,
 	}
@@ -88,7 +90,7 @@ func (c *UpdateFileCommand) Execute() cliEntities.CommandResult {
 			Salt:             payload.Value.Salt,
 			Nonce:            payload.Value.Nonce,
 		},
-		ServerID: c.rowID,
+		ServerID: c.rowIDServer,
 	}
 	if err := c.Storage.SaveFile(&fileLocal); err != nil {
 		return cliEntities.CommandResult{

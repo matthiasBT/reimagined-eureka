@@ -30,6 +30,7 @@ type Credential struct {
 	Salt              []byte `db:"salt"`
 	Nonce             []byte `db:"nonce"`
 	Version           int    `db:"version"`
+	IsDeleted         bool   `db:"is_deleted"`
 }
 
 type NoteReq struct {
@@ -46,6 +47,7 @@ type Note struct {
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
 	Version          int    `db:"version"`
+	IsDeleted        bool   `db:"is_deleted"`
 }
 
 type FileReq struct {
@@ -62,6 +64,7 @@ type File struct {
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
 	Version          int    `db:"version"`
+	IsDeleted        bool   `db:"is_deleted"`
 }
 
 type CardReq struct {
@@ -78,4 +81,5 @@ type Card struct {
 	Salt             []byte `db:"salt"`
 	Nonce            []byte `db:"nonce"`
 	Version          int    `db:"version"`
+	IsDeleted        bool   `db:"is_deleted"`
 }

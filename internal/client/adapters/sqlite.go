@@ -108,7 +108,7 @@ func (s *SQLiteStorage) SaveUser(user *clientEntities.User, entropy *common.Entr
 
 func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.CredentialLocal, error) {
 	var creds []*clientEntities.CredentialLocal
-	query := "select * from credentials where user_id = $1"
+	query := "select * from credentials where user_id = $1 and not is_deleted"
 	if err := s.db.Select(&creds, query, userID); err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (s *SQLiteStorage) ReadCredentials(userID int) ([]*clientEntities.Credentia
 
 func (s *SQLiteStorage) ReadCredential(userID int, credID int) (*clientEntities.CredentialLocal, error) {
 	var cred clientEntities.CredentialLocal
-	query := "select * from credentials where user_id = $1 and id = $2"
+	query := "select * from credentials where user_id = $1 and id = $2 and not is_deleted"
 	if err := s.db.Get(&cred, query, userID, credID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -152,9 +152,15 @@ func (s *SQLiteStorage) SaveCredentials(credentials *clientEntities.CredentialLo
 	return err
 }
 
+func (s *SQLiteStorage) DeleteCredentials(rowID int) error {
+	query := "update credentials set is_deleted = true where id = $1"
+	_, err := s.db.Exec(query, rowID)
+	return err
+}
+
 func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
 	var notes []*clientEntities.NoteLocal
-	query := "select * from notes where user_id = $1"
+	query := "select * from notes where user_id = $1 and not is_deleted"
 	if err := s.db.Select(&notes, query, userID); err != nil {
 		return nil, err
 	}
@@ -163,7 +169,7 @@ func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, erro
 
 func (s *SQLiteStorage) ReadNote(userID int, noteID int) (*clientEntities.NoteLocal, error) {
 	var note clientEntities.NoteLocal
-	query := "select * from notes where user_id = $1 and id = $2"
+	query := "select * from notes where user_id = $1 and id = $2 and not is_deleted"
 	if err := s.db.Get(&note, query, userID, noteID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -198,7 +204,7 @@ func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
 
 func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.FileLocal, error) {
 	var files []*clientEntities.FileLocal
-	query := "select * from files where user_id = $1"
+	query := "select * from files where user_id = $1 and not is_deleted"
 	if err := s.db.Select(&files, query, userID); err != nil {
 		return nil, err
 	}
@@ -207,7 +213,7 @@ func (s *SQLiteStorage) ReadFiles(userID int) ([]*clientEntities.FileLocal, erro
 
 func (s *SQLiteStorage) ReadFile(userID int, fileID int) (*clientEntities.FileLocal, error) {
 	var file clientEntities.FileLocal
-	query := "select * from files where user_id = $1 and id = $2"
+	query := "select * from files where user_id = $1 and id = $2 and not is_deleted"
 	if err := s.db.Get(&file, query, userID, fileID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -242,7 +248,7 @@ func (s *SQLiteStorage) SaveFile(file *clientEntities.FileLocal) error {
 
 func (s *SQLiteStorage) ReadCards(userID int) ([]*clientEntities.CardLocal, error) {
 	var cards []*clientEntities.CardLocal
-	query := "select * from cards where user_id = $1"
+	query := "select * from cards where user_id = $1 and not is_deleted"
 	if err := s.db.Select(&cards, query, userID); err != nil {
 		return nil, err
 	}
@@ -251,7 +257,7 @@ func (s *SQLiteStorage) ReadCards(userID int) ([]*clientEntities.CardLocal, erro
 
 func (s *SQLiteStorage) ReadCard(userID int, cardID int) (*clientEntities.CardLocal, error) {
 	var card clientEntities.CardLocal
-	query := "select * from cards where user_id = $1 and id = $2"
+	query := "select * from cards where user_id = $1 and id = $2 and not is_deleted"
 	if err := s.db.Get(&card, query, userID, cardID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

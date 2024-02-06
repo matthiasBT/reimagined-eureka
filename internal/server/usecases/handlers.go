@@ -11,6 +11,8 @@ import (
 	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
 	"reimagined_eureka/internal/server/infra/config"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +25,7 @@ func (c *BaseController) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := generateSessionToken()
-	tx, err := c.stor.Tx(r.Context())
+	tx, _ := c.stor.Tx(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to create user"))
@@ -74,7 +76,7 @@ func (c *BaseController) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := generateSessionToken()
-	tx, err := c.stor.Tx(r.Context())
+	tx, _ := c.stor.Tx(r.Context())
 	defer tx.Commit()
 	if err != nil {
 		defer tx.Rollback()
@@ -118,7 +120,7 @@ func (c *BaseController) writeCredentials(w http.ResponseWriter, r *http.Request
 	if creds == nil {
 		return
 	}
-	tx, err := c.stor.Tx(r.Context())
+	tx, _ := c.stor.Tx(r.Context())
 	defer tx.Commit()
 	rowId, err := c.credsRepo.Write(r.Context(), tx, *userID, creds)
 	if err != nil {
@@ -127,13 +129,40 @@ func (c *BaseController) writeCredentials(w http.ResponseWriter, r *http.Request
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		defer tx.Rollback()
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Errorf("failed to write credentials: %v", err).Error()
 		w.Write([]byte(msg))
 		return
 	}
 	w.Write([]byte(strconv.Itoa(rowId)))
+}
+
+func (c *BaseController) deleteCredentials(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	rowIDRaw := chi.URLParam(r, "rowID")
+	rowID, err := strconv.Atoi(rowIDRaw)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		msg := fmt.Errorf("Not a valid row ID: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	tx, _ := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	if err := c.credsRepo.Delete(r.Context(), tx, *userID, rowID); err != nil {
+		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to delete credentials: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
 }
 
 func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +174,7 @@ func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
 	if note == nil {
 		return
 	}
-	tx, err := c.stor.Tx(r.Context())
+	tx, _ := c.stor.Tx(r.Context())
 	defer tx.Commit()
 	rowId, err := c.notesRepo.Write(r.Context(), tx, *userID, note)
 	if err != nil {
@@ -171,7 +200,7 @@ func (c *BaseController) writeFile(w http.ResponseWriter, r *http.Request) {
 	if file == nil {
 		return
 	}
-	tx, err := c.stor.Tx(r.Context())
+	tx, _ := c.stor.Tx(r.Context())
 	defer tx.Commit()
 	rowId, err := c.filesRepo.Write(r.Context(), tx, *userID, file)
 	if err != nil {
@@ -197,7 +226,7 @@ func (c *BaseController) writeCard(w http.ResponseWriter, r *http.Request) {
 	if file == nil {
 		return
 	}
-	tx, err := c.stor.Tx(r.Context())
+	tx, _ := c.stor.Tx(r.Context())
 	defer tx.Commit()
 	rowId, err := c.cardsRepo.Write(r.Context(), tx, *userID, file)
 	if err != nil {

@@ -11,6 +11,7 @@ CREATE TABLE credentials (
     encrypted_password BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (user_id, server_id)
 );
 CREATE TABLE notes (
@@ -21,6 +22,7 @@ CREATE TABLE notes (
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (user_id, server_id)
 );
 CREATE TABLE files (
@@ -31,6 +33,7 @@ CREATE TABLE files (
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (user_id, server_id)
 );
 CREATE TABLE cards (
@@ -41,6 +44,7 @@ CREATE TABLE cards (
     encrypted_content BLOB NOT NULL,
     nonce BLOB NOT NULL,
     salt BLOB NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (user_id, server_id)
 );
 CREATE INDEX user_credentials ON credentials(user_id);

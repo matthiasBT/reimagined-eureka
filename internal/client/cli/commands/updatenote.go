@@ -15,7 +15,8 @@ type UpdateNoteCommand struct {
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
-	rowID          int
+	rowIDServer    int
+	rowIDLocal     int
 }
 
 func NewUpdateNoteCommand(
@@ -57,7 +58,8 @@ func (c *UpdateNoteCommand) Validate(args ...string) error {
 	if note == nil {
 		return fmt.Errorf("note %d doesn't exist", rowID)
 	}
-	c.rowID = rowID
+	c.rowIDServer = note.ServerID
+	c.rowIDLocal = note.ServerID
 	return nil
 }
 
@@ -69,7 +71,7 @@ func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	payload := common.NoteReq{
-		ServerID: &c.rowID,
+		ServerID: &c.rowIDServer,
 		Meta:     meta,
 		Value:    encrypted,
 	}
@@ -86,7 +88,7 @@ func (c *UpdateNoteCommand) Execute() cliEntities.CommandResult {
 			Salt:             payload.Value.Salt,
 			Nonce:            payload.Value.Nonce,
 		},
-		ServerID: c.rowID,
+		ServerID: c.rowIDServer,
 	}
 	if err := c.Storage.SaveNote(&noteLocal); err != nil {
 		return cliEntities.CommandResult{

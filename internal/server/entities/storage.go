@@ -39,6 +39,7 @@ type UserRepo interface {
 type CredentialsRepo interface {
 	Write(ctx context.Context, tx Tx, userID int, data *common.CredentialsReq) (int, error)
 	Read(ctx context.Context, tx Tx, userID int, rowID int, lock bool) (*common.CredentialsReq, int, error)
+	Delete(ctx context.Context, tx Tx, userID int, rowID int) error
 	// ReadVersion
 }
 

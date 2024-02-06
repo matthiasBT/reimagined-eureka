@@ -15,7 +15,8 @@ type UpdateCredsCommand struct {
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
-	rowID          int
+	rowIDServer    int
+	rowIDLocal     int
 	credsLogin     string
 }
 
@@ -58,7 +59,8 @@ func (c *UpdateCredsCommand) Validate(args ...string) error {
 	if creds == nil {
 		return fmt.Errorf("creds %d don't exist", rowID)
 	}
-	c.rowID = rowID
+	c.rowIDServer = creds.ServerID
+	c.rowIDLocal = creds.ID
 	c.credsLogin = args[1]
 	return nil
 }
@@ -71,7 +73,7 @@ func (c *UpdateCredsCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	payload := common.CredentialsReq{
-		ServerID: &c.rowID,
+		ServerID: &c.rowIDServer,
 		Login:    c.credsLogin,
 		Meta:     meta,
 		Value:    encrypted,
@@ -90,7 +92,7 @@ func (c *UpdateCredsCommand) Execute() cliEntities.CommandResult {
 			Salt:              payload.Value.Salt,
 			Nonce:             payload.Value.Nonce,
 		},
-		ServerID: c.rowID,
+		ServerID: c.rowIDServer,
 	}
 	if err := c.Storage.SaveCredentials(&credsLocal); err != nil {
 		return cliEntities.CommandResult{

@@ -15,7 +15,8 @@ type UpdateCardCommand struct {
 	CryptoProvider clientEntities.ICryptoProvider
 	proxy          clientEntities.IProxy
 	userID         int
-	rowID          int
+	rowIDServer    int
+	rowIDLocal     int
 	cardNumber     string
 }
 
@@ -51,6 +52,13 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 	if err != nil {
 		return err
 	}
+	card, err := c.Storage.ReadCard(c.userID, rowID)
+	if err != nil {
+		return fmt.Errorf("failed to read card: %v", err)
+	}
+	if card == nil {
+		return fmt.Errorf("card %d doesn't exist", rowID)
+	}
 	number := args[1]
 	if !isCardNumber(number) {
 		return fmt.Errorf(
@@ -59,7 +67,8 @@ func (c *UpdateCardCommand) Validate(args ...string) error {
 			cardNumberMaxLength,
 		)
 	}
-	c.rowID = rowID
+	c.rowIDServer = card.ServerID
+	c.rowIDLocal = card.ID
 	c.cardNumber = number
 	return nil
 }
@@ -72,7 +81,7 @@ func (c *UpdateCardCommand) Execute() cliEntities.CommandResult {
 		}
 	}
 	payload := common.CardReq{
-		ServerID: &c.rowID,
+		ServerID: &c.rowIDServer,
 		Meta:     meta,
 		Value:    encrypted,
 	}
@@ -89,7 +98,7 @@ func (c *UpdateCardCommand) Execute() cliEntities.CommandResult {
 			Salt:             payload.Value.Salt,
 			Nonce:            payload.Value.Nonce,
 		},
-		ServerID: c.rowID,
+		ServerID: c.rowIDServer,
 	}
 	if err := c.Storage.SaveCard(&cardLocal); err != nil {
 		return cliEntities.CommandResult{
