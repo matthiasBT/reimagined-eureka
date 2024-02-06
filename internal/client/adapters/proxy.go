@@ -115,6 +115,20 @@ func (p *ServerProxy) AddFile(file *common.FileReq) (int, error) {
 	return p.addSecret(false, fullURL.String(), payload, err)
 }
 
+func (p *ServerProxy) UpdateFile(file *common.FileReq) error {
+	if p.sessionCookie == "" {
+		return ErrNoSessionCookie
+	}
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathWriteFile,
+	}
+	payload, err := json.Marshal(file)
+	_, err = p.addSecret(true, fullURL.String(), payload, err)
+	return err
+}
+
 func (p *ServerProxy) AddCard(card *common.CardReq) (int, error) {
 	if p.sessionCookie == "" {
 		return 0, ErrNoSessionCookie

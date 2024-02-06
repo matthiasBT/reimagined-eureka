@@ -14,6 +14,7 @@ type IProxy interface {
 	UpdateNote(note *common.NoteReq) error
 
 	AddFile(file *common.FileReq) (int, error)
+	UpdateFile(note *common.FileReq) error
 
 	AddCard(card *common.CardReq) (int, error)
 }

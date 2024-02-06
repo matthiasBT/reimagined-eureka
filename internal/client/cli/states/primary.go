@@ -82,8 +82,9 @@ func createCommands(
 		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewAddCardCommand(logger, storage, cryptoProvider, proxy, userID),
 
-		cliCommands.NewUpdateNoteCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewUpdateCredsCommand(logger, storage, cryptoProvider, proxy, userID),
+		cliCommands.NewUpdateNoteCommand(logger, storage, cryptoProvider, proxy, userID),
+		cliCommands.NewUpdateFileCommand(logger, storage, cryptoProvider, proxy, userID),
 
 		cliCommands.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
 		cliCommands.NewRevealNoteCommand(logger, storage, cryptoProvider, userID),

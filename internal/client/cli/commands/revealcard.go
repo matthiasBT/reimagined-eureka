@@ -61,7 +61,7 @@ func (c *RevealCardCommand) Execute() cliEntities.CommandResult {
 	}
 	if card == nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("card %d doesn't exist for this user", c.rowID).Error(),
+			FailureMessage: fmt.Errorf("card %d doesn't exist", c.rowID).Error(),
 		}
 	}
 	encrypted := common.EncryptionResult{

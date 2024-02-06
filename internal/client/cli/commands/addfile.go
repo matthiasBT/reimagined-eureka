@@ -46,29 +46,17 @@ func (c *AddFileCommand) GetDescription() string {
 
 func (c *AddFileCommand) Validate(args ...string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("example: add-file <savePath>")
+		return fmt.Errorf("example: add-file <path>")
 	}
 	c.filePath = args[0]
 	return nil
 }
 
 func (c *AddFileCommand) Execute() cliEntities.CommandResult {
-	meta, err := readNonSecretValue(c.Logger, "meta information")
+	encrypted, meta, err := prepareFile(c.Logger, c.CryptoProvider, c.filePath)
 	if err != nil {
 		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read meta information: %v", err).Error(),
-		}
-	}
-	rawData, err := readFile(c.filePath)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to read file %s: %v", c.filePath, err).Error(),
-		}
-	}
-	encrypted, err := c.CryptoProvider.Encrypt(rawData)
-	if err != nil {
-		return cliEntities.CommandResult{
-			FailureMessage: fmt.Errorf("failed to encrypt file data: %v", err).Error(),
+			FailureMessage: err.Error(),
 		}
 	}
 	payload := common.FileReq{
@@ -113,4 +101,22 @@ func readFile(filepath string) ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func prepareFile(
+	logger logging.ILogger, cryptoProvider clientEntities.ICryptoProvider, filePath string,
+) (*common.EncryptionResult, string, error) {
+	meta, err := readNonSecretValue(logger, "meta information")
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read meta information: %v", err)
+	}
+	rawData, err := readFile(filePath)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read file %s: %v", filePath, err)
+	}
+	encrypted, err := cryptoProvider.Encrypt(rawData)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to encrypt file data: %v", err)
+	}
+	return encrypted, meta, nil
 }

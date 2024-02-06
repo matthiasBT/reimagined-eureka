@@ -25,7 +25,9 @@ func (r *CardsRepo) Write(ctx context.Context, tx entities.Tx, userID int, data 
 	return r.create(ctx, tx, userID, data)
 }
 
-func (r *CardsRepo) Read(ctx context.Context, tx entities.Tx, userID int, rowId int) (*common.CardReq, error) {
+func (r *CardsRepo) Read(
+	ctx context.Context, tx entities.Tx, userID int, rowId int, lock bool,
+) (*common.CardReq, int, error) {
 	panic("implement me!")
 }
 

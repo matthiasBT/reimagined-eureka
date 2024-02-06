@@ -9,6 +9,7 @@ import (
 
 var (
 	ErrLoginAlreadyTaken = errors.New("login already taken")
+	ErrDoesntExist       = errors.New("row doesn't exist")
 )
 
 const DefaultVersion = 1
@@ -49,12 +50,12 @@ type NotesRepo interface {
 
 type FilesRepo interface {
 	Write(ctx context.Context, tx Tx, userID int, data *common.FileReq) (int, error)
-	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.FileReq, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int, lock bool) (*common.FileReq, int, error)
 	// ReadVersion
 }
 
 type CardsRepo interface {
 	Write(ctx context.Context, tx Tx, userID int, data *common.CardReq) (int, error)
-	Read(ctx context.Context, tx Tx, userID int, rowID int) (*common.CardReq, error)
+	Read(ctx context.Context, tx Tx, userID int, rowID int, lock bool) (*common.CardReq, int, error)
 	// ReadVersion
 }

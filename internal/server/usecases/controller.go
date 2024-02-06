@@ -44,12 +44,19 @@ func (c *BaseController) Route() *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/user/register", c.signUp)
 	r.Post("/user/login", c.signIn)
+
 	r.Post("/secrets/credentials", c.writeCredentials)
 	r.Put("/secrets/credentials", c.writeCredentials)
+
 	r.Post("/secrets/notes", c.writeNote)
 	r.Put("/secrets/notes", c.writeNote)
-	r.Post("/secrets/files", c.createFile)
-	r.Post("/secrets/cards", c.createCard)
+
+	r.Post("/secrets/files", c.writeFile)
+	r.Put("/secrets/files", c.writeFile)
+
+	r.Post("/secrets/cards", c.writeCard)
+	r.Put("/secrets/cards", c.writeCard)
+
 	r.Get("/ping", c.ping)
 	return r
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
@@ -42,7 +41,7 @@ func (r *NotesRepo) Read(
 	}
 	if err := tx.GetContext(ctx, &note, query, rowID, userID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, 0, fmt.Errorf("row %d doesn't exist for user", rowID)
+			return nil, 0, entities.ErrDoesntExist
 		}
 		return nil, 0, err
 	}

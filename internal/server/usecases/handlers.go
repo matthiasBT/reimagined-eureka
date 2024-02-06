@@ -123,6 +123,11 @@ func (c *BaseController) writeCredentials(w http.ResponseWriter, r *http.Request
 	rowId, err := c.credsRepo.Write(r.Context(), tx, *userID, creds)
 	if err != nil {
 		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		defer tx.Rollback()
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Errorf("failed to write credentials: %v", err).Error()
 		w.Write([]byte(msg))
@@ -145,6 +150,10 @@ func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
 	rowId, err := c.notesRepo.Write(r.Context(), tx, *userID, note)
 	if err != nil {
 		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Errorf("failed to write note: %v", err).Error()
 		w.Write([]byte(msg))
@@ -153,7 +162,7 @@ func (c *BaseController) writeNote(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
-func (c *BaseController) createFile(w http.ResponseWriter, r *http.Request) {
+func (c *BaseController) writeFile(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {
 		return
@@ -167,6 +176,10 @@ func (c *BaseController) createFile(w http.ResponseWriter, r *http.Request) {
 	rowId, err := c.filesRepo.Write(r.Context(), tx, *userID, file)
 	if err != nil {
 		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Errorf("failed to write file: %v", err).Error()
 		w.Write([]byte(msg))
@@ -175,7 +188,7 @@ func (c *BaseController) createFile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(rowId)))
 }
 
-func (c *BaseController) createCard(w http.ResponseWriter, r *http.Request) {
+func (c *BaseController) writeCard(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {
 		return
@@ -189,6 +202,10 @@ func (c *BaseController) createCard(w http.ResponseWriter, r *http.Request) {
 	rowId, err := c.cardsRepo.Write(r.Context(), tx, *userID, file)
 	if err != nil {
 		defer tx.Rollback()
+		if errors.Is(err, entities.ErrDoesntExist) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Errorf("failed to write card: %v", err).Error()
 		w.Write([]byte(msg))

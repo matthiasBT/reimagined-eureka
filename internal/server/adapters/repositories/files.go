@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"reimagined_eureka/internal/common"
 	"reimagined_eureka/internal/server/entities"
@@ -21,12 +23,37 @@ func NewFilesRepo(logger logging.ILogger, storage entities.Storage) *FilesRepo {
 }
 
 func (r *FilesRepo) Write(ctx context.Context, tx entities.Tx, userID int, data *common.FileReq) (int, error) {
-	r.logger.Infof("Creating new file for user: %d", userID)
-	return r.create(ctx, tx, userID, data)
+	if data.ServerID == nil {
+		r.logger.Infof("Creating new file for user: %d", userID)
+		return r.create(ctx, tx, userID, data)
+	}
+	r.logger.Infof("Updating file %d for user: %d", data.ServerID, userID)
+	return *data.ServerID, r.update(ctx, tx, userID, data)
 }
 
-func (r *FilesRepo) Read(ctx context.Context, tx entities.Tx, userID int, rowId int) (*common.FileReq, error) {
-	panic("implement me!")
+func (r *FilesRepo) Read(
+	ctx context.Context, tx entities.Tx, userID int, rowID int, lock bool,
+) (*common.FileReq, int, error) {
+	var file common.File
+	query := "select * from files where id = $1 and user_id = $2" // TODO: check delete flag in the future
+	if lock {
+		query = query + " for update"
+	}
+	if err := tx.GetContext(ctx, &file, query, rowID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, entities.ErrDoesntExist
+		}
+		return nil, 0, err
+	}
+	var result common.FileReq
+	result.ServerID = &rowID
+	result.Meta = file.Meta
+	result.Value = &common.EncryptionResult{
+		Ciphertext: file.EncryptedContent,
+		Salt:       file.Salt,
+		Nonce:      file.Nonce,
+	}
+	return &result, file.Version, nil
 }
 
 func (r *FilesRepo) create(
@@ -45,14 +72,14 @@ func (r *FilesRepo) create(
 		return 0, err
 	}
 	r.logger.Infof("File created")
-	if err := r.createVersion(ctx, tx, result.ID, data); err != nil {
+	if err := r.createVersion(ctx, tx, result.ID, data, entities.DefaultVersion); err != nil {
 		return 0, err
 	}
 	return result.ID, nil
 }
 
 func (r *FilesRepo) createVersion(
-	ctx context.Context, tx entities.Tx, fileID int, data *common.FileReq,
+	ctx context.Context, tx entities.Tx, fileID int, data *common.FileReq, version int,
 ) error {
 	query := `
 		insert into files_versions(file_id, version, meta, encrypted_content, salt, nonce)
@@ -62,7 +89,7 @@ func (r *FilesRepo) createVersion(
 		ctx,
 		query,
 		fileID,
-		entities.DefaultVersion,
+		version,
 		data.Meta,
 		data.Value.Ciphertext,
 		data.Value.Salt,
@@ -75,6 +102,31 @@ func (r *FilesRepo) createVersion(
 	return nil
 }
 
-func (r *FilesRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.FileReq) (int, error) {
-	panic("Implement me!")
+func (r *FilesRepo) update(ctx context.Context, tx entities.Tx, userID int, data *common.FileReq) error {
+	_, version, err := r.Read(ctx, tx, userID, *data.ServerID, true)
+	if err != nil {
+		return err
+	}
+	query := `
+		update files
+		set version = $2, meta = $3, encrypted_content = $4, salt = $5, nonce = $6
+		where id = $1
+	`
+	if err := tx.ExecContext(
+		ctx,
+		query,
+		*data.ServerID,
+		version+1,
+		data.Meta,
+		data.Value.Ciphertext,
+		data.Value.Salt,
+		data.Value.Nonce,
+	); err != nil {
+		r.logger.Errorf("Failed to update file: %s", err.Error())
+		return err
+	}
+	if err := r.createVersion(ctx, tx, *data.ServerID, data, version+1); err != nil {
+		return err
+	}
+	return nil
 }

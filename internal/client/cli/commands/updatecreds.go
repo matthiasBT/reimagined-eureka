@@ -56,7 +56,7 @@ func (c *UpdateCredsCommand) Validate(args ...string) error {
 		return fmt.Errorf("failed to read creds: %v", err)
 	}
 	if creds == nil {
-		return fmt.Errorf("creds %d don't exist for this user", rowID)
+		return fmt.Errorf("creds %d don't exist", rowID)
 	}
 	c.rowID = rowID
 	c.credsLogin = args[1]
