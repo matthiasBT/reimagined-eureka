@@ -65,6 +65,33 @@ func (r *CardsRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowI
 	return nil
 }
 
+func (r *CardsRepo) ReadMany(
+	ctx context.Context, tx entities.Tx, userID, startID, batchSize int,
+) ([]*common.CardReq, error) {
+	var cards []common.Card
+	query := "select * from cards where user_id = $1 and id > $2 and not is_deleted order by id limit $3"
+	if err := tx.SelectContext(ctx, &cards, query, userID, startID, batchSize); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var result = make([]*common.CardReq, 0, len(cards))
+	for _, row := range cards {
+		resultRow := common.CardReq{
+			ServerID: &row.ID,
+			Meta:     row.Meta,
+			Value: &common.EncryptionResult{
+				Ciphertext: row.EncryptedContent,
+				Salt:       row.Salt,
+				Nonce:      row.Nonce,
+			},
+		}
+		result = append(result, &resultRow)
+	}
+	return result, nil
+}
+
 func (r *CardsRepo) create(
 	ctx context.Context, tx entities.Tx, userID int, data *common.CardReq,
 ) (int, error) {

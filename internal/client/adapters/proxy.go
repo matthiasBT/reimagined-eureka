@@ -97,9 +97,17 @@ func (p *ServerProxy) ReadFiles(startID int, batchSize int) ([]*common.FileReq, 
 	return result, nil
 }
 
-//func (p *ServerProxy) ReadCards(startID int, batchSize int) ([]*common.CredentialsReq, error) {
-//	return p.readMany(urlPrefix+pathCredentials, startID, batchSize)
-//}
+func (p *ServerProxy) ReadCards(startID int, batchSize int) ([]*common.CardReq, error) {
+	body, err := p.readMany(urlPrefix+pathCard, startID, batchSize)
+	if err != nil {
+		return nil, err
+	}
+	var result []*common.CardReq
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to parse cards from server response: %v", err)
+	}
+	return result, nil
+}
 
 func (p *ServerProxy) readMany(urlPath string, startID int, batchSize int) ([]byte, error) {
 	if p.sessionCookie == "" {

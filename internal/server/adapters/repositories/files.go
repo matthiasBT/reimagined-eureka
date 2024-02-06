@@ -72,7 +72,7 @@ func (r *FilesRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowI
 func (r *FilesRepo) ReadMany(
 	ctx context.Context, tx entities.Tx, userID, startID, batchSize int,
 ) ([]*common.FileReq, error) {
-	var files []common.Note
+	var files []common.File
 	query := "select * from files where user_id = $1 and id > $2 and not is_deleted order by id limit $3"
 	if err := tx.SelectContext(ctx, &files, query, userID, startID, batchSize); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

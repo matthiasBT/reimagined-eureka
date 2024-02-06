@@ -25,6 +25,7 @@ type IProxy interface {
 	AddCard(card *common.CardReq) (int, error)
 	UpdateCard(card *common.CardReq) error
 	DeleteCard(rowID int) error
+	ReadCards(startID int, batchSize int) ([]*common.CardReq, error)
 }
 
 type UserDataResponse struct {

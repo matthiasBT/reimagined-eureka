@@ -65,5 +65,6 @@ type CardsRepo interface {
 	Write(ctx context.Context, tx Tx, userID int, data *common.CardReq) (int, error)
 	Read(ctx context.Context, tx Tx, userID int, rowID int, lock bool) (*common.CardReq, int, error)
 	Delete(ctx context.Context, tx Tx, userID int, rowID int) error
+	ReadMany(ctx context.Context, tx Tx, userID, startID, batchSize int) ([]*common.CardReq, error)
 	// ReadVersion
 }
