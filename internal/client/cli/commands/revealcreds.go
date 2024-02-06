@@ -11,9 +11,9 @@ import (
 )
 
 type RevealCredsCommand struct {
-	Logger         logging.ILogger
-	Storage        clientEntities.IStorage
-	CryptoProvider clientEntities.ICryptoProvider
+	logger         logging.ILogger
+	storage        clientEntities.IStorage
+	cryptoProvider clientEntities.ICryptoProvider
 	userID         int // TODO: check userID too!
 	rowID          int
 }
@@ -25,9 +25,9 @@ func NewRevealCredsCommand(
 	userID int,
 ) *RevealCredsCommand {
 	return &RevealCredsCommand{
-		Logger:         logger,
-		Storage:        storage,
-		CryptoProvider: cryptoProvider,
+		logger:         logger,
+		storage:        storage,
+		cryptoProvider: cryptoProvider,
 		userID:         userID,
 	}
 }
@@ -53,7 +53,7 @@ func (c *RevealCredsCommand) Validate(args ...string) error {
 }
 
 func (c *RevealCredsCommand) Execute() cliEntities.CommandResult {
-	cred, err := c.Storage.ReadCredential(c.userID, c.rowID)
+	cred, err := c.storage.ReadCredential(c.userID, c.rowID)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to read password: %v", err).Error(),
@@ -69,13 +69,13 @@ func (c *RevealCredsCommand) Execute() cliEntities.CommandResult {
 		Salt:       cred.Salt,
 		Nonce:      cred.Nonce,
 	}
-	password, err := c.CryptoProvider.Decrypt(&encrypted)
+	password, err := c.cryptoProvider.Decrypt(&encrypted)
 	if err != nil {
 		return cliEntities.CommandResult{
 			FailureMessage: fmt.Errorf("failed to decrypt password: %v", err).Error(),
 		}
 	}
-	c.Logger.Warningln("Password:")
-	c.Logger.Warningln(string(password))
+	c.logger.Warningln("Password:")
+	c.logger.Warningln(string(password))
 	return cliEntities.CommandResult{}
 }

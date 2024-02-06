@@ -18,6 +18,7 @@ type IStorage interface {
 	SaveCredentials(credentials *CredentialLocal) error
 
 	ReadNotes(userID int) ([]*NoteLocal, error)
+	ReadNote(userID int, noteID int) (*NoteLocal, error)
 	SaveNote(note *NoteLocal) error
 
 	ReadFiles(userID int) ([]*FileLocal, error)

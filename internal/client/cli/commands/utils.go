@@ -78,3 +78,14 @@ func getLengthHint(minSize, maxSize int) string {
 	}
 	return lengthHint
 }
+
+func trimToNRunes(s string, n int) string {
+	runeCount := 0
+	for i := range s {
+		if runeCount == n {
+			return s[:i]
+		}
+		runeCount++
+	}
+	return s
+}

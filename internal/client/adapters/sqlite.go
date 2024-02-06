@@ -154,6 +154,18 @@ func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, erro
 	return notes, nil
 }
 
+func (s *SQLiteStorage) ReadNote(userID int, noteID int) (*clientEntities.NoteLocal, error) {
+	var note clientEntities.NoteLocal
+	query := "select * from notes where user_id = $1 and id = $2"
+	if err := s.db.Get(&note, query, userID, noteID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &note, nil
+}
+
 func (s *SQLiteStorage) SaveNote(note *clientEntities.NoteLocal) error {
 	query := `
 		insert into notes(server_id, user_id, meta, encrypted_content, salt, nonce)

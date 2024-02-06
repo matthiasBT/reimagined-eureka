@@ -15,7 +15,6 @@ type MasterKeyState struct {
 	proxy          clientEntities.IProxy
 	login          string
 	password       string
-	sessionCookie  string
 	userID         int
 }
 
@@ -26,7 +25,6 @@ func NewMasterKeyState(
 	proxy clientEntities.IProxy,
 	login string,
 	password string,
-	sessionCookie string,
 	userID int,
 ) *MasterKeyState {
 	cmds := []cliEntities.Command{
@@ -41,7 +39,6 @@ func NewMasterKeyState(
 		proxy:          proxy,
 		login:          login,
 		password:       password,
-		sessionCookie:  sessionCookie,
 		userID:         userID,
 	}
 }
@@ -56,7 +53,6 @@ func (s *MasterKeyState) Execute(line string) (cliEntities.State, cliEntities.Co
 			s.proxy,
 			s.login,
 			s.password,
-			s.sessionCookie,
 			s.userID,
 			result.MasterKey,
 		)

@@ -15,7 +15,6 @@ type PrimaryState struct {
 	proxy          clientEntities.IProxy
 	login          string
 	password       string
-	sessionCookie  string
 	userID         int
 	masterKey      string
 }
@@ -27,11 +26,10 @@ func NewPrimaryState(
 	proxy clientEntities.IProxy,
 	login string,
 	password string,
-	sessionCookie string,
 	userID int,
 	masterKey string,
 ) *PrimaryState {
-	cmds := createCommands(logger, storage, cryptoProvider, proxy, login, password, sessionCookie, userID, masterKey)
+	cmds := createCommands(logger, storage, cryptoProvider, proxy, login, password, userID)
 	return &PrimaryState{
 		GeneralState:   GeneralState{Commands: cmds},
 		logger:         logger,
@@ -40,7 +38,6 @@ func NewPrimaryState(
 		proxy:          proxy,
 		login:          login,
 		password:       password,
-		sessionCookie:  sessionCookie,
 		userID:         userID,
 		masterKey:      masterKey,
 	}
@@ -60,9 +57,7 @@ func (s *PrimaryState) Execute(line string) (entities.State, entities.CommandRes
 			s.proxy,
 			s.login,
 			s.password,
-			result.SessionCookie,
 			s.userID,
-			s.masterKey,
 		)
 	}
 	return state, result
@@ -75,9 +70,7 @@ func createCommands(
 	proxy clientEntities.IProxy,
 	login string,
 	password string,
-	sessionCookie string,
 	userID int,
-	masterKey string,
 ) []entities.Command {
 	return []entities.Command{
 		cliCommands.NewRefreshSessionCommand(logger, proxy, login, password),
@@ -87,6 +80,7 @@ func createCommands(
 		cliCommands.NewAddFileCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewAddCardCommand(logger, storage, cryptoProvider, proxy, userID),
 		cliCommands.NewRevealCredsCommand(logger, storage, cryptoProvider, userID),
+		cliCommands.NewRevealNoteCommand(logger, storage, cryptoProvider, userID),
 		&cliCommands.QuitCommand{},
 	}
 }

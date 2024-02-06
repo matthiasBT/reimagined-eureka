@@ -42,6 +42,9 @@ func NewInitialState(
 
 func (s InitialState) Execute(line string) (cliEntities.State, cliEntities.CommandResult) {
 	state, result := s.GeneralState.Execute(line)
+	if result.SessionCookie != "" {
+		s.proxy.SetSessionCookie(result.SessionCookie)
+	}
 	if result.Login != "" {
 		state = NewMasterKeyState(
 			s.logger,
@@ -50,7 +53,6 @@ func (s InitialState) Execute(line string) (cliEntities.State, cliEntities.Comma
 			s.proxy,
 			result.Login,
 			result.Password,
-			result.SessionCookie,
 			result.UserID,
 		)
 	}
