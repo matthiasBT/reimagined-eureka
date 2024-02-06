@@ -176,6 +176,22 @@ func (s *SQLiteStorage) DeleteFile(rowID int) error {
 	return err
 }
 
+func (s *SQLiteStorage) Purge(rowID int) error {
+	queries := []string{
+		"delete from credentials where user_id = $1",
+		"delete from notes where user_id = $1",
+		"delete from files where user_id = $1",
+		"delete from cards where user_id = $1",
+	}
+	for _, query := range queries {
+		_, err := s.db.Exec(query, rowID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *SQLiteStorage) ReadNotes(userID int) ([]*clientEntities.NoteLocal, error) {
 	var notes []*clientEntities.NoteLocal
 	query := "select * from notes where user_id = $1 and not is_deleted"

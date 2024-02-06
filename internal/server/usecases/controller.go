@@ -48,6 +48,7 @@ func (c *BaseController) Route() *chi.Mux {
 	r.Post("/secrets/credentials", c.writeCredentials)
 	r.Put("/secrets/credentials", c.writeCredentials)
 	r.Delete("/secrets/credentials/{rowID}", c.deleteCredentials)
+	r.Get("/secrets/credentials", c.getCredentials)
 
 	r.Post("/secrets/notes", c.writeNote)
 	r.Put("/secrets/notes", c.writeNote)

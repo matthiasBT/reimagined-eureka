@@ -18,6 +18,7 @@ type Tx interface {
 	Commit() error
 	Rollback() error
 	GetContext(ctx context.Context, dest any, query string, args ...any) error
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	ExecContext(ctx context.Context, query string, args ...any) error
 }
 
@@ -39,6 +40,7 @@ type UserRepo interface {
 type CredentialsRepo interface {
 	Write(ctx context.Context, tx Tx, userID int, data *common.CredentialsReq) (int, error)
 	Read(ctx context.Context, tx Tx, userID int, rowID int, lock bool) (*common.CredentialsReq, int, error)
+	ReadMany(ctx context.Context, tx Tx, userID, startID, batchSize int) ([]*common.CredentialsReq, error)
 	Delete(ctx context.Context, tx Tx, userID int, rowID int) error
 	// ReadVersion
 }

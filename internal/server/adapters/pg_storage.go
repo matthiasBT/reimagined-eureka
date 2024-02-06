@@ -32,6 +32,10 @@ func (pgtx *PGTx) GetContext(ctx context.Context, dest interface{}, query string
 	return pgtx.tx.GetContext(ctx, dest, query, args...)
 }
 
+func (pgtx *PGTx) SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	return pgtx.tx.SelectContext(ctx, dest, query, args...)
+}
+
 func (pgtx *PGTx) ExecContext(ctx context.Context, query string, args ...any) error {
 	_, err := pgtx.tx.ExecContext(ctx, query, args...)
 	return err

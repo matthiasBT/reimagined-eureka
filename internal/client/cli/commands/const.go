@@ -30,6 +30,11 @@ const CSCMinChars = 3
 const CSCMaxChars = 3
 const NameMinChars = 1
 
+const SyncCardsBatchSize = 10
+const SyncCredsBatchSize = 10
+const SyncNotesBatchSize = 1
+const SyncFilesBatchSize = 1
+
 var SupportedTypes = []string{
 	SecretTypeCreds,
 	SecretTypeNotes,

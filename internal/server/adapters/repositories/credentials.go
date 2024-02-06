@@ -58,6 +58,34 @@ func (r *CredentialsRepo) Read(
 	return &result, creds.Version, nil
 }
 
+func (r *CredentialsRepo) ReadMany(
+	ctx context.Context, tx entities.Tx, userID, startID, batchSize int,
+) ([]*common.CredentialsReq, error) {
+	var creds []common.Credential
+	query := "select * from credentials where user_id = $1 and id > $2 and not is_deleted order by id limit $3"
+	if err := tx.SelectContext(ctx, &creds, query, userID, startID, batchSize); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // TODO: test what happens
+		}
+		return nil, err
+	}
+	var result = make([]*common.CredentialsReq, 0, len(creds))
+	for _, row := range creds {
+		resultRow := common.CredentialsReq{
+			ServerID: &row.ID,
+			Login:    row.Login,
+			Meta:     row.Meta,
+			Value: &common.EncryptionResult{
+				Ciphertext: row.EncryptedPassword,
+				Salt:       row.Salt,
+				Nonce:      row.Nonce,
+			},
+		}
+		result = append(result, &resultRow)
+	}
+	return result, nil
+}
+
 func (r *CredentialsRepo) Delete(ctx context.Context, tx entities.Tx, userID int, rowID int) error {
 	_, _, err := r.Read(ctx, tx, userID, rowID, true)
 	if err != nil {

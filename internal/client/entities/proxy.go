@@ -10,6 +10,7 @@ type IProxy interface {
 	AddCredentials(creds *common.CredentialsReq) (int, error)
 	UpdateCredentials(creds *common.CredentialsReq) error
 	DeleteCredentials(rowID int) error
+	ReadCredentials(startID int, batchSize int) ([]*common.CredentialsReq, error)
 
 	AddNote(note *common.NoteReq) (int, error)
 	UpdateNote(note *common.NoteReq) error

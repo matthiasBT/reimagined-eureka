@@ -167,6 +167,38 @@ func (c *BaseController) deleteCredentials(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (c *BaseController) getCredentials(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(w, r)
+	if userID == nil {
+		return
+	}
+	startID, batchSize, err := getSyncParams(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	tx, _ := c.stor.Tx(r.Context())
+	defer tx.Commit()
+	result, err := c.credsRepo.ReadMany(r.Context(), tx, *userID, startID, batchSize)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to get credentials: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	payload, err := json.Marshal(result)
+	if err != nil {
+		defer tx.Rollback()
+		w.WriteHeader(http.StatusInternalServerError)
+		msg := fmt.Errorf("failed to get credentials: %v", err).Error()
+		w.Write([]byte(msg))
+		return
+	}
+	w.Write(payload)
+}
+
 func (c *BaseController) deleteNote(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(w, r)
 	if userID == nil {
@@ -360,4 +392,22 @@ func getUserID(w http.ResponseWriter, r *http.Request) *int {
 	}
 	res := userID.(int)
 	return &res
+}
+
+func getSyncParams(r *http.Request) (int, int, error) {
+	query := r.URL.Query()
+	startIDRaw := query.Get("startID")
+	startID, err := strconv.Atoi(startIDRaw)
+	if err != nil {
+		return 0, 0, err
+	}
+	batchSizeRaw := query.Get("batchSize")
+	batchSize, err := strconv.Atoi(batchSizeRaw)
+	if err != nil {
+		return 0, 0, err
+	}
+	if startID < 0 || batchSize <= 0 {
+		return 0, 0, fmt.Errorf("invalid parameters")
+	}
+	return startID, batchSize, nil
 }

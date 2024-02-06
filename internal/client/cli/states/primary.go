@@ -78,7 +78,7 @@ func createCommands(
 ) []entities.Command {
 	return []entities.Command{
 		global.NewRefreshSessionCommand(logger, proxy, login, password),
-
+		global.NewSyncCommand(logger, storage, cryptoProvider, proxy, userID),
 		global.NewListSecretsCommand(logger, storage, cryptoProvider, userID),
 
 		add.NewAddCredsCommand(logger, storage, cryptoProvider, proxy, userID),

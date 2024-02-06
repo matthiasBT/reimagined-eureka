@@ -61,6 +61,34 @@ func (p *ServerProxy) AddCredentials(creds *common.CredentialsReq) (int, error) 
 	return p.addSecret(false, fullURL.String(), payload, err)
 }
 
+func (p *ServerProxy) ReadCredentials(startID int, batchSize int) ([]*common.CredentialsReq, error) {
+	if p.sessionCookie == "" {
+		return nil, ErrNoSessionCookie
+	}
+	params := url.Values{}
+	params.Add("startID", strconv.Itoa(startID))
+	params.Add("batchSize", strconv.Itoa(batchSize))
+	fullURL := url.URL{
+		Scheme: p.serverURL.Scheme,
+		Host:   p.serverURL.Host,
+		Path:   urlPrefix + pathCredentials,
+	}
+	req, err := http.NewRequest("GET", fullURL.String()+"?"+params.Encode(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %v", err)
+	}
+	p.addSessionCookie(req)
+	body, _, err := getResponse(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %v", err)
+	}
+	var result []*common.CredentialsReq
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to parse server response: %v", err)
+	}
+	return result, nil
+}
+
 func (p *ServerProxy) AddNote(note *common.NoteReq) (int, error) {
 	if p.sessionCookie == "" {
 		return 0, ErrNoSessionCookie
