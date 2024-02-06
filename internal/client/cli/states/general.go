@@ -33,7 +33,7 @@ func (s GeneralState) Execute(line string) (cliEntities.State, cliEntities.Comma
 			if result.Quit {
 				return &QuitState{}, result
 			}
-			return nil, result // TODO: currently used only for switching to QuitState. Fix maybe?
+			return nil, result
 		}
 	}
 	return nil, cliEntities.CommandResult{FailureMessage: ResultUnknownCommand}

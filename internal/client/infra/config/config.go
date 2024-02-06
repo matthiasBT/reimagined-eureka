@@ -18,7 +18,7 @@ type Config struct {
 
 func InitConfig() (*Config, error) {
 	conf := new(Config)
-	flag.StringVar(&conf.DatabasePath, "d", "", "Path to a secrets storage") // TODO: SQLCipher
+	flag.StringVar(&conf.DatabasePath, "d", "", "Path to a secrets storage")
 	flag.StringVar(&conf.serverAddress, "a", "", "Server address")
 	flag.Parse()
 	if err := conf.validateDB(); err != nil {

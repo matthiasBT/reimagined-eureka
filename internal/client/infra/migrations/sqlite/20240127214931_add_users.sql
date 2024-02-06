@@ -3,7 +3,7 @@
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
     login TEXT NOT NULL UNIQUE,
-    pwd_hash BLOB NOT NULL, -- TODO: split into a separate table
+    pwd_hash BLOB NOT NULL,
     entropy_hash BLOB NOT NULL,
     entropy_encrypted BLOB NOT NULL,
     entropy_salt BLOB NOT NULL,

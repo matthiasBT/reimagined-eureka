@@ -74,7 +74,7 @@ func (c *RegisterCommand) Execute() cliEntities.CommandResult {
 		msg := fmt.Errorf("failed to register the user: %v", err)
 		return cliEntities.CommandResult{FailureMessage: msg.Error()}
 	}
-	defer tx.Commit() // TODO: does it make sense to try to handle commit and rollback errors?
+	defer tx.Commit()
 	c.CryptoProvider.SetMasterKey(c.masterKey)
 	entropyBinary := []byte(c.entropy)
 	entropyEncrypted, err := c.CryptoProvider.Encrypt(entropyBinary)

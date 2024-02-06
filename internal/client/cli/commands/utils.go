@@ -12,8 +12,6 @@ import (
 	"reimagined_eureka/internal/client/infra/logging"
 )
 
-// TODO: check on Windows too, and maybe on Linux
-
 func ReadSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize int) (string, error) {
 	logger.Info("Enter %s: ", what)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -36,7 +34,7 @@ func ReadSecretValueMasked(logger logging.ILogger, what string, minSize, maxSize
 			if minSize != 0 && len(result) < minSize {
 				return "", fmt.Errorf("%s is shorter than %d characters", what, minSize)
 			} else if maxSize != 0 && len(result) > maxSize {
-				return "", fmt.Errorf("%s is longer than %d characters", what, maxSize) // TODO: use maybe?
+				return "", fmt.Errorf("%s is longer than %d characters", what, maxSize)
 			}
 			return result, nil
 		case '\x7f', '\b': // Backspace key

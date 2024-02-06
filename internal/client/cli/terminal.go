@@ -28,7 +28,7 @@ func NewTerminal(
 	proxy clientEntities.IProxy,
 	cryptoProvider *adapters.CryptoProvider,
 ) *Terminal {
-	scanner := bufio.NewScanner(os.Stdin) // TODO: pass as parameter
+	scanner := bufio.NewScanner(os.Stdin)
 	return &Terminal{
 		logger:    logger,
 		storage:   storage,
@@ -69,7 +69,7 @@ func (t *Terminal) Run() {
 
 func (t *Terminal) handleInputErrors() {
 	if err := t.scanner.Err(); err != nil {
-		t.logger.Failureln("Failureln reading input:", err) // TODO: handle errors
+		t.logger.Failureln("Failureln reading input:", err)
 		os.Exit(1)
 	}
 }

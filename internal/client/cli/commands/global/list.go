@@ -52,8 +52,6 @@ func (c *ListSecretsCommand) Validate(args ...string) error {
 	return nil
 }
 
-// TODO: don't show deleted rows
-
 func (c *ListSecretsCommand) Execute() cliEntities.CommandResult {
 	if err := c.listCredentials(); err != nil {
 		return c.failedResult(err)

@@ -1,7 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
--- TODO: create indexes for all tables, including those that are not in this migration
--- TODO: table inheritance?
 CREATE TABLE credentials (
     id INTEGER PRIMARY KEY,
     server_id INTEGER UNIQUE NOT NULL,
